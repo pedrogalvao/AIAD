@@ -44,6 +44,7 @@ public class Territory {
 	
 	public void addFrontier(Territory T) {
 		this.frontiers.add(T);
+		T.frontiers.add(this);
 	}
 	
 }
