@@ -5,27 +5,29 @@ import java.util.ArrayList;
 
 public class WarAgent {
 	 ArrayList<Territory> territories;
-	 
+
 	 WarAgent(){
 		 this.territories = new ArrayList<Territory>(0);
 	 }
-	 
+
 	 void addTerritory(Territory T) {
 		 T.setPlayer(this);
 		 this.territories.add(T);
-		 
-	 }	 
-	 
+	 }
+
 	 void removeTerritory(Territory T) {
 		 T.setPlayer(this);
-		 this.territories.remove(T);
-		 
+		 this.territories.remove(T);		 
 	 }
-	 
-	 
-	 
+
+
 	 class WarBehaviour extends Behaviour {
-	 	public void action() {
+	 	/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public void action() {
 	 		return;
 		}
 	 	
