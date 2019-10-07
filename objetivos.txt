@@ -10,3 +10,4 @@
 > O jogador que tiver o maior número de tropas vence
 > As fronteiras serão determinadas aleatóriamente, o número de fronteiras de cada território será aleatório de 2 a 4
 > O número de territórios tem de ser multiplo do números de jogadores
+> Os players poderão formar aliança visando um objetivo em comum
