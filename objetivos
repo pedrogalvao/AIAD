@@ -1,0 +1,7 @@
+> 3 players
+> Cada player tem o objetivo de conquistar todos os territórios
+> O território será um grafo
+> A conquista deverá ser realizada através de "vizinhos"
+> A escolhe inicial dos territórios para cada player será aleatória
+> As tropas serão conseguidas através do número de territórios
+> O número de territórios será definido por um parâmetro ao inicializar o game
