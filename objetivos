@@ -5,3 +5,8 @@
 > A escolhe inicial dos territórios para cada player será aleatória
 > As tropas serão conseguidas através do número de territórios
 > O número de territórios será definido por um parâmetro ao inicializar o game
+> A cada inicio do seu turno, cada player ganha X tropas
+> Quando é atacado um território, o número de tropas perdidas é (Nº de tropas minha) - (Nº tropas inimigo), 1:1
+> O jogador que tiver o maior número de tropas vence
+> As fronteiras serão determinadas aleatóriamente, o número de fronteiras de cada território será aleatório de 2 a 4
+> O número de territórios tem de ser multiplo do números de jogadores
