@@ -1,21 +1,30 @@
+import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
-
 import java.util.ArrayList;
 
 
-public class WarAgent {
-	 ArrayList<Territory> territories;
+public class WarAgent extends Agent {
+	 /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private ArrayList<Territory> territories;
 
-	 WarAgent(){
+	 public WarAgent(){
+		 this.territories = new ArrayList<Territory>(0);
+	 }
+	 
+	 protected void setup() {
+		 addBehaviour(new WarBehaviour());
 		 this.territories = new ArrayList<Territory>(0);
 	 }
 
-	 void addTerritory(Territory T) {
+	 public void addTerritory(Territory T) {
 		 T.setPlayer(this);
 		 this.territories.add(T);
 	 }
 
-	 void removeTerritory(Territory T) {
+	 public void removeTerritory(Territory T) {
 		 T.setPlayer(this);
 		 this.territories.remove(T);		 
 	 }
@@ -25,7 +34,7 @@ public class WarAgent {
 	 	/**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
+		public static final long serialVersionUID = 1L;
 
 		public void action() {
 	 		return;
