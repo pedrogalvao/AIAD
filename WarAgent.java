@@ -1,6 +1,7 @@
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class WarAgent extends Agent {
@@ -9,14 +10,13 @@ public class WarAgent extends Agent {
 	 */
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Territory> territories;
-
-	 public WarAgent(){
-		 this.territories = new ArrayList<Territory>(0);
-	 }
 	 
-	 protected void setup() {
-		 addBehaviour(new WarBehaviour());
+	 public void setup() {
+
+		System.out.println("setup");
 		 this.territories = new ArrayList<Territory>(0);
+		 addBehaviour(new WarBehaviour());
+		 System.out.println("setup is done");
 	 }
 
 	 public void addTerritory(Territory T) {
@@ -37,13 +37,25 @@ public class WarAgent extends Agent {
 		public static final long serialVersionUID = 1L;
 
 		public void action() {
+			Random random = new Random();
+			int t = random.nextInt(territories.size());
+			Territory T1 = territories.get(t); 
+			int f = T1.frontiers.size();
+
+			int f = T2.frontiers.size();
+			Random random2 = new Random();
+			f = random2.nextInt(f);
+			Territory T2 = territories.get(t).frontiers.get(f); 
+			attack(T1,T2,T1.troops-1);	
 	 		return;
 		}
 	 	
 	 	public void attack(Territory T1, Territory T2, int n) {
 	 		// ataque do territorio T1 para o territorio T2 com n tropas
+ 			System.out.println("attack with "+Integer.toString(n)+" troops");
 	 		if (n >= T1.getTroops()) {
 	 			//movimento invalido
+	 			System.out.println("invalid movement");
 	 			return;
 	 		}
 	 		else if (n < T2.getTroops()) {
