@@ -13,12 +13,17 @@ public class WarAgent extends Agent {
 	private ArrayList<Territory> territories;
 	private String agentName;
 	 
-	public void setup(ArrayList<Territory> territories) {
-
+	public void setup() {
 		this.agentName = getAID().getName();
 		System.out.println("Agent " + this.agentName + " setup");
-		this.territories = territories;
+
+		Object[] args = getArguments();
+
+		this.territories = (ArrayList< game.Territory >) args[0];
 		addBehaviour(new WarBehaviour());
+
+		System.out.println("Number of territories for agent " + agentName + " is: " + Integer.toString(this.territories.size()) );
+
 		System.out.println("setup is done");
 	}
 
@@ -44,12 +49,23 @@ public class WarAgent extends Agent {
 		public static final long serialVersionUID = 1L;
 
 		public void action() {
+			// Get origin of attack
 			Random random = new Random();
-			int t = random.nextInt(territories.size());
+			int t = random.nextInt(territories.size() -1);
 			Territory T1 = territories.get(t);
-			int f = T1.frontiers.size();
 
-			Territory T2 = territories.get(t).frontiers.get(f); 
+			// Check if this territory can attack. If not, get next territory.
+			if (T1.troops == 1){
+				System.out.println("You cannot attack from a territory with only one troop");
+				t += 1;
+
+			}
+
+
+			// Get destiny of attack
+			int f = random.nextInt(T1.frontiers.size() -1);
+			Territory T2 = T1.frontiers.get(f);
+
 			attack(T1,T2,T1.troops-1);	
 	 		return;
 		}

@@ -19,4 +19,5 @@ Uma instância do JADE é chamado de container. Um container pode ser principal 
 AMS Agent Management System é um agente criado assim que você inicializa. Ele é responsável por criar e matar agentes nos containers subordinados
 DF Directory Facilitator agente que contém as funcionalidades e localização de outros agentes
 
-gabinete I022
+Arguments:
+-gui -agents map0:game.Map
