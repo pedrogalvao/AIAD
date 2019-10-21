@@ -22,28 +22,35 @@ public class Map extends Agent {
 		int numberTerritories = 6;
 		int numberAgents = 3;
 		this.territories = new ArrayList<Territory>(0);
+		this.agents=new ArrayList<AgentController>(0);
 
-		System.out.println("Creating agents...");
-		agents=new ArrayList<AgentController>(0);
 		ContainerController cc = getContainerController();
-		for (int i = 0; i < numberAgents; i++)	{
+
+		for (int j=0; j < numberAgents; j++){
+			ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
+			Object[] args = new Object[1];
+
+			for (int i = 0; i < numberTerritories/numberAgents; i++) {
+				System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
+				game.Territory newTer = new game.Territory();
+				this.territories.add(newTer); // Adding territory to map
+				agentsTerritories.add(newTer); // Adding territory to agent
+				System.out.println("Territory "+Integer.toString(i)+" belongs to agent "+Integer.toString(j));
+			}
+
+			System.out.println("Creating agent " + Integer.toString(j));
+			args[0] = agentsTerritories;
 			try {
-				AgentController ac = cc.createNewAgent("A"+Integer.toString(i), "WarAgent", null);
-				agents.add(ac);
+				AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
+				this.agents.add(ac);
 			} catch (StaleProxyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		System.out.println("number of agents created: "+Integer.toString(agents.size()));
+		System.out.println("number of agents created: "+Integer.toString(this.agents.size()));
 
-		for (int i = 0; i < numberTerritories; i++) {
-			System.out.println("creating territory "+Integer.toString(i));
-			this.territories.add(new Territory());
-			//this.territories.get(i).setPlayer(this.agents.get(i%3));
-			System.out.println("Territory "+Integer.toString(i)+" belongs to agent "+Integer.toString(i%3));
-		}
-		
+		// Adding frontiers
 		for (Territory T : this.territories) {
 			Random random = new Random();
 			int front = random.nextInt(3) + 2;			 
@@ -54,8 +61,8 @@ public class Map extends Agent {
 				System.out.println("frontier "+Integer.toString(i)+" "+Integer.toString(k));
 			}
 		}
-		
-		System.out.println("map is done");
+
+		System.out.println("map is created; starting agents");
 		for (AgentController ac : agents) {
 			try {
 				ac.start();

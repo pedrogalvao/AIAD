@@ -13,11 +13,11 @@ public class WarAgent extends Agent {
 	private ArrayList<Territory> territories;
 	private String agentName;
 	 
-	public void setup() {
+	public void setup(ArrayList<Territory> territories) {
 
 		this.agentName = getAID().getName();
 		System.out.println("Agent " + this.agentName + " setup");
-		this.territories = new ArrayList<Territory>(1);
+		this.territories = territories;
 		addBehaviour(new WarBehaviour());
 		System.out.println("setup is done");
 	}
