@@ -11,3 +11,12 @@
 > As fronteiras serão determinadas aleatóriamente, o número de fronteiras de cada território será aleatório de 2 a 4
 > O número de territórios tem de ser multiplo do números de jogadores
 > Os players poderão formar aliança visando um objetivo em comum
+
+
+- - - Run configurations - - -
+Uma instância do JADE é chamado de container. Um container pode ser principal ou normal. Cada conjunto de containers (com um main e os outros normais) é chamado de plataforma. Os agentes podem se comunicar com qualquer outro agente, mesmo de outra plataforma, caso saiba o nome. É bom ver isso depois, pra rodar os agentes em network.
+
+AMS Agent Management System é um agente criado assim que você inicializa. Ele é responsável por criar e matar agentes nos containers subordinados
+DF Directory Facilitator agente que contém as funcionalidades e localização de outros agentes
+
+gabinete I022

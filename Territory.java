@@ -1,5 +1,6 @@
+package game;
+
 import java.util.ArrayList;
-import WarAgent;
 
 public class Territory {
 	public WarAgent player;
@@ -10,6 +11,12 @@ public class Territory {
 		this.troops = 2;
 		this.frontiers = new ArrayList<Territory>(0);
 		this.player = null;
+	}
+
+	public Territory(WarAgent player) {
+		this.troops = 2;
+		this.frontiers = new ArrayList<Territory>(0);
+		this.player = player;
 	}
 
 	public int getTroops() {

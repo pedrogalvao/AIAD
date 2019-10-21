@@ -1,8 +1,9 @@
+package game;
+
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import java.util.ArrayList;
 import java.util.Random;
-
 
 public class WarAgent extends Agent {
 	 /**
@@ -10,14 +11,16 @@ public class WarAgent extends Agent {
 	 */
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Territory> territories;
+	private String agentName;
 	 
-	 public void setup() {
+	public void setup() {
 
-		System.out.println("setup");
-		 this.territories = new ArrayList<Territory>(0);
-		 addBehaviour(new WarBehaviour());
-		 System.out.println("setup is done");
-	 }
+		this.agentName = getAID().getName();
+		System.out.println("Agent " + this.agentName + " setup");
+		this.territories = new ArrayList<Territory>(1);
+		addBehaviour(new WarBehaviour());
+		System.out.println("setup is done");
+	}
 
 	 public void addTerritory(Territory T) {
 		 T.setPlayer(this);
@@ -27,6 +30,10 @@ public class WarAgent extends Agent {
 	 public void removeTerritory(Territory T) {
 		 T.setPlayer(this);
 		 this.territories.remove(T);		 
+	 }
+
+	 public void takeDown(){
+	 	System.out.println("Done with war");
 	 }
 
 
@@ -39,12 +46,9 @@ public class WarAgent extends Agent {
 		public void action() {
 			Random random = new Random();
 			int t = random.nextInt(territories.size());
-			Territory T1 = territories.get(t); 
+			Territory T1 = territories.get(t);
 			int f = T1.frontiers.size();
 
-			int f = T2.frontiers.size();
-			Random random2 = new Random();
-			f = random2.nextInt(f);
 			Territory T2 = territories.get(t).frontiers.get(f); 
 			attack(T1,T2,T1.troops-1);	
 	 		return;

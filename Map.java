@@ -1,3 +1,5 @@
+package game;
+
 import java.util.ArrayList;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -17,14 +19,14 @@ public class Map extends Agent {
 	private ArrayList<AgentController> agents;
 
 	protected void setup() {
-		int n = 6;
+		int numberTerritories = 6;
+		int numberAgents = 3;
 		this.territories = new ArrayList<Territory>(0);
-
 
 		System.out.println("Creating agents...");
 		agents=new ArrayList<AgentController>(0);
 		ContainerController cc = getContainerController();
-		for (int i = 0; i < 3; i++)	{
+		for (int i = 0; i < numberAgents; i++)	{
 			try {
 				AgentController ac = cc.createNewAgent("A"+Integer.toString(i), "WarAgent", null);
 				agents.add(ac);
@@ -32,16 +34,16 @@ public class Map extends Agent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			//agents.add(ac.getAgent("A"+Integer.toString(i)));
 		}
-		System.out.println("number of agents: "+Integer.toString(agents.size()));
-		for (int i = 0; i < n; i++) {
+		System.out.println("number of agents created: "+Integer.toString(agents.size()));
+
+		for (int i = 0; i < numberTerritories; i++) {
 			System.out.println("creating territory "+Integer.toString(i));
 			this.territories.add(new Territory());
 			//this.territories.get(i).setPlayer(this.agents.get(i%3));
 			System.out.println("Territory "+Integer.toString(i)+" belongs to agent "+Integer.toString(i%3));
 		}
+		
 		for (Territory T : this.territories) {
 			Random random = new Random();
 			int front = random.nextInt(3) + 2;			 
@@ -52,6 +54,7 @@ public class Map extends Agent {
 				System.out.println("frontier "+Integer.toString(i)+" "+Integer.toString(k));
 			}
 		}
+		
 		System.out.println("map is done");
 		for (AgentController ac : agents) {
 			try {
