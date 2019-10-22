@@ -22,8 +22,6 @@ public class WarAgent extends Agent {
 		this.territories = (ArrayList< game.Territory >) args[0];
 		addBehaviour(new WarBehaviour());
 
-		System.out.println("Number of territories for agent " + agentName + " is: " + Integer.toString(this.territories.size()) );
-
 		System.out.println("setup is done");
 	}
 
@@ -33,7 +31,6 @@ public class WarAgent extends Agent {
 	 }
 
 	 public void removeTerritory(Territory T) {
-		 T.setPlayer(this);
 		 this.territories.remove(T);		 
 	 }
 
@@ -49,27 +46,48 @@ public class WarAgent extends Agent {
 		public static final long serialVersionUID = 1L;
 
 		public void action() {
-			// Get origin of attack
-			Random random = new Random();
-			int t = random.nextInt(territories.size() -1);
-			Territory T1 = territories.get(t);
-
-			// Check if this territory can attack. If not, get next territory.
-			if (T1.troops == 1){
-				System.out.println("You cannot attack from a territory with only one troop");
-				t += 1;
-
-			}
-
-
-			// Get destiny of attack
-			int f = random.nextInt(T1.frontiers.size() -1);
-			Territory T2 = T1.frontiers.get(f);
-
-			attack(T1,T2,T1.troops-1);	
-	 		return;
+			this.attackTerritory();
+			//this.communicate();
 		}
-	 	
+
+
+		private void attackTerritory(){
+
+			Random random = new Random();
+			int t;
+			int n = 0;
+			game.Territory T1;
+
+			 do {
+				 // Get origin of attack
+				 t = random.nextInt(territories.size() -1);
+				 T1 = territories.get(t);
+
+				 // Check if this territory can attack. If not, get next territory.
+				 if (T1.troops < 2){
+					 System.out.println("You cannot attack from a territory with only one troop");
+					 t += 1;
+
+					 if (t == territories.size() -1)
+						 t=0;
+				 }
+
+				 n++;
+			 } while(T1.troops < 2 && n < territories.size());
+
+			 if (T1.troops < 2){
+				 System.out.println("You can no longer attack. Wait for more troops");
+				 return;
+			 }
+
+			 // Get destiny of attack
+			 int f = random.nextInt(T1.frontiers.size() -1);
+			 Territory T2 = T1.frontiers.get(f);
+
+			 attack(T1,T2,T1.troops-1);
+			 return;
+		 }
+
 	 	public void attack(Territory T1, Territory T2, int n) {
 	 		// ataque do territorio T1 para o territorio T2 com n tropas
  			System.out.println("attack with "+Integer.toString(n)+" troops");
@@ -83,6 +101,8 @@ public class WarAgent extends Agent {
 	 			T2.removeTroops(n);
 	 			return;
 	 		}
+
+	 		// Conquer
 	 		else if (n > T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(n -T2.getTroops());
@@ -90,13 +110,17 @@ public class WarAgent extends Agent {
 	 			
 	 			return;
 	 		}
+
+	 		// Stalemate
 	 		else if (n == T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(1);
 	 			return;
 	 		}	 		 		
 	 	}
-	 	
+
+
+
 		public boolean done() {
 			return false;
 		}

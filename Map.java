@@ -72,9 +72,36 @@ public class Map extends Agent {
 				e.printStackTrace();
 			}
 		}
-		
-		
-		
+
+		addBehaviour(new MapBehaviour(this, 1));
+	}
+
+	class MapBehaviour extends Behaviour {
+		/**
+		 *
+		 */
+		public static final long serialVersionUID = 1L;
+		public final game.Map map;
+		public final long delay;
+
+		public MapBehaviour(game.Map map, long msecs){
+			this.map = map;
+			this.delay = msecs;
+		}
+
+		public void action() {
+			for (game.Territory T : this.map.territories) {
+				T.troops *= 2;
+				System.out.println("Added troops to territory. Troops count is now: " + Integer.toString(T.troops));
+			}
+
+			block(this.delay);
+
+		}
+
+		public boolean done() {
+			return false;
+		}
 	}
 
 }
