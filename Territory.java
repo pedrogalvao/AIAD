@@ -3,17 +3,23 @@ package game;
 import java.util.ArrayList;
 
 public class Territory {
+	public static int terCount;
+	public int terID;
 	public WarAgent player;
 	public int troops;
 	public ArrayList<Territory> frontiers;
 
 	public Territory() {
+		this.terID = terCount;
+		terCount++;
 		this.troops = 2;
 		this.frontiers = new ArrayList<Territory>(0);
 		this.player = null;
 	}
 
 	public Territory(WarAgent player) {
+		this.terID = terCount;
+		terCount++;
 		this.troops = 2;
 		this.frontiers = new ArrayList<Territory>(0);
 		this.player = player;

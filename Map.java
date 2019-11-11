@@ -35,7 +35,7 @@ public class Map extends Agent {
 				game.Territory newTer = new game.Territory();
 				this.territories.add(newTer); // Adding territory to map
 				agentsTerritories.add(newTer); // Adding territory to agent
-				System.out.println("Territory "+Integer.toString(i)+" belongs to agent "+Integer.toString(j));
+				System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
 			}
 
 			System.out.println("Creating agent " + Integer.toString(j));
@@ -48,7 +48,7 @@ public class Map extends Agent {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("number of agents created: "+Integer.toString(this.agents.size()));
+		System.out.println("number of agents created: " + Integer.toString(this.agents.size()));
 
 		// Adding frontiers
 		for (Territory T : this.territories) {
@@ -57,13 +57,19 @@ public class Map extends Agent {
 			for (int i = 0; i < front; i++) {
 				Random random2 = new Random();
 				int k = random2.nextInt(this.territories.size());
+
+				// Check if the random territory to make frontier is itself
+				if (this.territories.get(k).terID == T.terID){
+					k++;
+				}
+
 				T.addFrontier(this.territories.get(k));
-				System.out.println("frontier "+Integer.toString(i)+" "+Integer.toString(k));
+				System.out.println("frontier " + Integer.toString(T.terID)+ " " + Integer.toString(this.territories.get(k).terID) );
 			}
 		}
 
 		System.out.println("map is created; starting agents");
-		for (AgentController ac : agents) {
+		for (AgentController ac : this.agents) {
 			try {
 				ac.start();
 				System.out.println("ac.start()");
@@ -73,7 +79,7 @@ public class Map extends Agent {
 			}
 		}
 
-		addBehaviour(new MapBehaviour(this, 1));
+		addBehaviour(new MapBehaviour(this, 1000));
 	}
 
 	class MapBehaviour extends Behaviour {
@@ -91,8 +97,8 @@ public class Map extends Agent {
 
 		public void action() {
 			for (game.Territory T : this.map.territories) {
-				T.troops *= 2;
-				System.out.println("Added troops to territory. Troops count is now: " + Integer.toString(T.troops));
+				T.troops += 2;
+				System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + " troops count is now: " + Integer.toString(T.troops));
 			}
 
 			block(this.delay);

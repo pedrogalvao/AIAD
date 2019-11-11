@@ -22,7 +22,7 @@ public class WarAgent extends Agent {
 		this.territories = (ArrayList< game.Territory >) args[0];
 		addBehaviour(new WarBehaviour());
 
-		System.out.println("setup is done");
+		// System.out.println("setup is done");
 	}
 
 	 public void addTerritory(Territory T) {
@@ -65,7 +65,7 @@ public class WarAgent extends Agent {
 
 				 // Check if this territory can attack. If not, get next territory.
 				 if (T1.troops < 2){
-					 System.out.println("You cannot attack from a territory with only one troop");
+					 // System.out.println("You cannot attack from a territory with only one troop");
 					 t += 1;
 
 					 if (t == territories.size() -1)
@@ -76,7 +76,7 @@ public class WarAgent extends Agent {
 			 } while(T1.troops < 2 && n < territories.size());
 
 			 if (T1.troops < 2){
-				 System.out.println("You can no longer attack. Wait for more troops");
+				 // System.out.println("You can no longer attack. Wait for more troops");
 				 return;
 			 }
 
@@ -89,9 +89,11 @@ public class WarAgent extends Agent {
 		 }
 
 	 	public void attack(Territory T1, Territory T2, int n) {
-	 		// ataque do territorio T1 para o territorio T2 com n tropas
- 			System.out.println("attack with "+Integer.toString(n)+" troops");
-	 		if (n >= T1.getTroops()) {
+			// Print attacking informations
+			// From territory A with x troops to territory B with y troops.
+ 			System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
+
+ 			if (n >= T1.getTroops()) {
 	 			//movimento invalido
 	 			System.out.println("invalid movement");
 	 			return;
@@ -99,6 +101,8 @@ public class WarAgent extends Agent {
 	 		else if (n < T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.removeTroops(n);
+				// Information after the attack
+				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 	 			return;
 	 		}
 
@@ -107,7 +111,8 @@ public class WarAgent extends Agent {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(n -T2.getTroops());
 	 			T2.setPlayer(T1.getPlayer());
-	 			
+				// Information after the attack
+				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 	 			return;
 	 		}
 
@@ -115,8 +120,10 @@ public class WarAgent extends Agent {
 	 		else if (n == T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(1);
+				// Information after the attack
+				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 	 			return;
-	 		}	 		 		
+	 		}
 	 	}
 
 
