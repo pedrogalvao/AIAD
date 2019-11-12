@@ -10,6 +10,7 @@ public class WarAgent extends Agent {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
 	private ArrayList<Territory> territories;
 	private String agentName;
 	 
@@ -20,9 +21,10 @@ public class WarAgent extends Agent {
 		Object[] args = getArguments();
 
 		this.territories = (ArrayList< game.Territory >) args[0];
+		for (game.Territory T : this.territories){
+			T.setPlayer(this);
+		}
 		addBehaviour(new WarBehaviour());
-
-		// System.out.println("setup is done");
 	}
 
 	 public void addTerritory(Territory T) {
@@ -34,9 +36,15 @@ public class WarAgent extends Agent {
 		 this.territories.remove(T);		 
 	 }
 
+	public ArrayList<Territory> getTerritories() {
+		return territories;
+	}
+
 	 public void takeDown(){
-	 	System.out.println("Done with war");
+	 	System.out.println("Agent " + this.getName() + " has died (out of territories");
 	 }
+
+	 public String getAgentName() { return this.agentName; }
 
 
 	 class WarBehaviour extends Behaviour {
@@ -53,6 +61,12 @@ public class WarAgent extends Agent {
 
 		private void attackTerritory(){
 
+			// If agent doesn't have any more territories, take down agent
+			if (territories.size() == 0){
+				takeDown();
+				return;
+			}
+
 			Random random = new Random();
 			int t;
 			int n = 0;
@@ -60,7 +74,7 @@ public class WarAgent extends Agent {
 
 			 do {
 				 // Get origin of attack
-				 t = random.nextInt(territories.size() -1);
+				 t = random.nextInt(territories.size()); // 0 inclusive size exclusive
 				 T1 = territories.get(t);
 
 				 // Check if this territory can attack. If not, get next territory.
@@ -91,18 +105,19 @@ public class WarAgent extends Agent {
 	 	public void attack(Territory T1, Territory T2, int n) {
 			// Print attacking informations
 			// From territory A with x troops to territory B with y troops.
- 			System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
+ 			//System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
 
- 			if (n >= T1.getTroops()) {
+ 			while (n >= T1.getTroops()) {
 	 			//movimento invalido
 	 			System.out.println("invalid movement");
-	 			return;
+	 			n--;
 	 		}
-	 		else if (n < T2.getTroops()) {
+
+	 		if (n < T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.removeTroops(n);
 				// Information after the attack
-				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+				//System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 	 			return;
 	 		}
 
@@ -110,9 +125,17 @@ public class WarAgent extends Agent {
 	 		else if (n > T2.getTroops()) {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(n -T2.getTroops());
+
+	 			// Information about the attack
+				System.out.println("Player " + T1.player.getName() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.player.getName() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+
+	 			// If conquered last territory, destroy player
+	 			if (T2.player.getTerritories().size() == 1)
+	 				T2.player.takeDown();
 	 			T2.setPlayer(T1.getPlayer());
-				// Information after the attack
-				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+
+
+
 	 			return;
 	 		}
 
@@ -121,7 +144,7 @@ public class WarAgent extends Agent {
 	 			T1.removeTroops(n);
 	 			T2.setTroops(1);
 				// Information after the attack
-				System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+				//System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 	 			return;
 	 		}
 	 	}

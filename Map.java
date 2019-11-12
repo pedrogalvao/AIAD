@@ -26,10 +26,12 @@ public class Map extends Agent {
 
 		ContainerController cc = getContainerController();
 
+		// Creating territories and agents
 		for (int j=0; j < numberAgents; j++){
 			ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
 			Object[] args = new Object[1];
 
+			// Creating territories
 			for (int i = 0; i < numberTerritories/numberAgents; i++) {
 				System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
 				game.Territory newTer = new game.Territory();
@@ -38,6 +40,7 @@ public class Map extends Agent {
 				System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
 			}
 
+			// Creating agent to get the territories created above
 			System.out.println("Creating agent " + Integer.toString(j));
 			args[0] = agentsTerritories;
 			try {
@@ -60,7 +63,13 @@ public class Map extends Agent {
 
 				// Check if the random territory to make frontier is itself
 				if (this.territories.get(k).terID == T.terID){
-					k++;
+					// If it is the last territory, then make frontier with the first one
+					if (this.territories.size() == k + 1){
+						k=0;
+					}
+					else{
+						k++;
+					}
 				}
 
 				T.addFrontier(this.territories.get(k));
@@ -96,13 +105,17 @@ public class Map extends Agent {
 		}
 
 		public void action() {
-			for (game.Territory T : this.map.territories) {
-				T.troops += 2;
-				System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + " troops count is now: " + Integer.toString(T.troops));
-			}
 
 			block(this.delay);
 
+			System.out.println("Map status:");
+
+			for (game.Territory T : this.map.territories) {
+				T.troops += 2;
+				if (!(T.player == null))
+					System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.player.getName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
+				//System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + " troops count is now: " + Integer.toString(T.troops));
+			}
 		}
 
 		public boolean done() {

@@ -11,9 +11,11 @@ Agents have the following behaviours:
 # TODOs
 
 ## Make sure a game ends
-- Print the initial state of the map
+- ~~Print the initial state of the map~~ 
+- ~~Each X seconds, print the state of the map~~
 - Print attacks to make sure they are working properly. Info before and after the attack
-- Each X seconds, print the state of the map
+  - Agents still can attack itself ???
+  - Somehow agent still has territory ownership even if his list of territories is empty
 - If game not ending with those strategies, implement better strategy for agent
 
 
