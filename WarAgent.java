@@ -12,8 +12,9 @@ public class WarAgent extends Agent {
 	private static final long serialVersionUID = 1L;
 	private ArrayList<game.Territory> territories;
 	private String agentName;
-
+	private float a;
 	public void setup() {
+		this.a = 0;
 		this.agentName = getAID().getName().substring(0,2);
 		System.out.println("Agent " + this.agentName + " setup");
 
@@ -60,8 +61,7 @@ public class WarAgent extends Agent {
 			//this.communicate();
 		}
 
-
-		private void attackTerritory(){
+		protected void attackTerritory(){
 
 			Random random = new Random();
 			int t = 0;
