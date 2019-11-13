@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Territory {
 	public static int terCount;
 	public int terID;
-	public WarAgent player;
+	public String player;
 	public int troops;
 	public ArrayList<Territory> frontiers;
 
@@ -17,7 +17,7 @@ public class Territory {
 		this.player = null;
 	}
 
-	public Territory(WarAgent player) {
+	public Territory(String player) {
 		this.terID = terCount;
 		terCount++;
 		this.troops = 2;
@@ -30,7 +30,8 @@ public class Territory {
 	}	
 
 	public void setTroops(int n) {
-		this.troops = n;
+		if (n > 0) this.troops = n;
+		else this.troops = 1;
 	}
 
 	public void addTroops(int n) {
@@ -44,12 +45,12 @@ public class Territory {
 		}
 	}
 
-	public WarAgent getPlayer() {
+	public String getPlayer() {
 		return this.player;
 	}
 
-	public void setPlayer(WarAgent P) {
-		if (this.player != null) this.player.removeTerritory(this);
+	public void setPlayer(String P) {
+		//if (this.player != null) this.player.removeTerritory(this);
 		this.player = P;
 	}
 

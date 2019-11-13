@@ -1,19 +1,17 @@
 package game;
 
-import java.util.ArrayList;
+import game.Territory;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Map extends Agent {
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Territory> territories;
 	private ArrayList<AgentController> agents;
@@ -26,23 +24,22 @@ public class Map extends Agent {
 
 		ContainerController cc = getContainerController();
 
-		// Creating territories and agents
 		for (int j=0; j < numberAgents; j++){
 			ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
 			Object[] args = new Object[1];
 
-			// Creating territories
+
+			System.out.println("Creating agent " + Integer.toString(j));
+			args[0] = agentsTerritories;
 			for (int i = 0; i < numberTerritories/numberAgents; i++) {
 				System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
 				game.Territory newTer = new game.Territory();
 				this.territories.add(newTer); // Adding territory to map
 				agentsTerritories.add(newTer); // Adding territory to agent
+				newTer.setPlayer("A"+Integer.toString(j));
 				System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
 			}
 
-			// Creating agent to get the territories created above
-			System.out.println("Creating agent " + Integer.toString(j));
-			args[0] = agentsTerritories;
 			try {
 				AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
 				this.agents.add(ac);
@@ -56,23 +53,18 @@ public class Map extends Agent {
 		// Adding frontiers
 		for (Territory T : this.territories) {
 			Random random = new Random();
-			int front = random.nextInt(3) + 2;			 
+			int front = random.nextInt(3) + 2;
 			for (int i = 0; i < front; i++) {
 				Random random2 = new Random();
 				int k = random2.nextInt(this.territories.size());
 
 				// Check if the random territory to make frontier is itself
 				if (this.territories.get(k).terID == T.terID){
-					// If it is the last territory, then make frontier with the first one
-					if (this.territories.size() == k + 1){
-						k=0;
-					}
-					else{
-						k++;
-					}
+					k++;
 				}
 
 				T.addFrontier(this.territories.get(k));
+				this.territories.get(k).addFrontier(T); //as fronteiras sao bidirecionais
 				System.out.println("frontier " + Integer.toString(T.terID)+ " " + Integer.toString(this.territories.get(k).terID) );
 			}
 		}
@@ -105,22 +97,31 @@ public class Map extends Agent {
 		}
 
 		public void action() {
+			for (game.Territory T : this.map.territories) {
+				T.troops += 2;
+				//System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + ". troops count is now: " + Integer.toString(T.troops));
+			}
+
+			Boolean done = true;
+			System.out.println("Map status: ");
+			for (int i =0; i < territories.size(); i++){
+				game.Territory T = territories.get(i);
+				if (done && !T.getPlayer().equals(territories.get(0).getPlayer()))
+					done = false;
+				System.out.println("Territory "+ Integer.toString(T.terID) + " Agent "+ T.getPlayer() + " Troops "+ T.getTroops());
+			}
+
+			if (done) {
+				System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer() + " conquered all the territories.");
+				doDelete();
+			}
 
 			block(this.delay);
 
-			System.out.println("Map status:");
-
-			for (game.Territory T : this.map.territories) {
-				T.troops += 2;
-				if (!(T.player == null))
-					System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.player.getName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
-				//System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + " troops count is now: " + Integer.toString(T.troops));
-			}
 		}
 
 		public boolean done() {
 			return false;
 		}
 	}
-
 }
