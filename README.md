@@ -13,9 +13,9 @@ Agents have the following behaviours:
 ## Make sure a game ends
 - ~~Print the initial state of the map~~ 
 - ~~Each X seconds, print the state of the map~~
-- ~~Print attacks to make sure they are working properly. Info before and after the attack
-  - ~~Agents still can attack itself ???
-  - ~~Somehow agent still has territory ownership even if his list of territories is empty
+- ~~Print attacks to make sure they are working properly. Info before and after the attack~~
+  - ~~Agents still can attack itself ???~~
+  - ~~Somehow agent still has territory ownership even if his list of territories is empty~~
 - Sometimes territories have negative number of troops (don't know how it's possible)
 - If game not ending with those strategies, implement better strategy for agent
   - Note: the game usually ends quickly
