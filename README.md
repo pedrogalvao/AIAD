@@ -7,6 +7,7 @@ The map is a graph and each territory is a node.
 Agents have the following behaviours:
 
 	- Attacks randomly
+	- Choose territories with highest difference in number of troops. Sometimes decide to not attack at all
 
 # TODOs
 
