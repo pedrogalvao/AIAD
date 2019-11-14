@@ -47,120 +47,144 @@ public class WarAgent extends Agent {
 
 
 	 class WarBehaviour extends Behaviour {
-	 	/**
-		 * 
+		/**
+		 *
 		 */
 		public static final long serialVersionUID = 1L;
 
 		public void action() {
-			/*if (territories.size() == 0){
-				takeDown();
-				return;
-			}*/
 			this.attackTerritory();
 			//this.communicate();
 		}
 
-		protected void attackTerritory(){
 
+		private void attackTerritory() {
+
+			// If agent doesn't have any more territories, take down agent
+			if (territories.size() == 0) {
+				System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
+				//takeDown();
+				doDelete();
+				return;
+			}
+
+			// Select territories to attack and troop amount
+			game.Territory[] srcDest = new game.Territory[2];
+			int numTroops = selectAttack(srcDest);
+			if (0 == numTroops)
+				return;
+
+			// If same owner, move troops. Else attack
+			if (srcDest[0].getPlayer().equals(srcDest[1].getPlayer()))
+				moveTroops(srcDest[0], srcDest[1], numTroops);
+			else
+				attack(srcDest[0], srcDest[1], numTroops);
+
+			return;
+		}
+
+		public int selectAttack(game.Territory[] srcDest) {
 			Random random = new Random();
-			int t = 0;
-			int n = 0;
+			int t;
 			game.Territory T1;
+			int n = 0; // Default not attacking
 
-			 do {
-				 // Get origin of attack
-				 if (territories.size() > 1) 	t = random.nextInt(territories.size()); // 0 inclusive size exclusive
-				 else if (territories.size() == 1) t = 0;
-				 else if (territories.size() == 0) {
-					 //System.out.println("0");
-				 	return;
-				 }
-				 T1 = territories.get(t);
+			int srcCheck = 0;
+			do {
+				// Get origin of attack
+				t = random.nextInt(territories.size()-1); // 0 inclusive size exclusive
+				T1 = territories.get(t);
 
-				 if (!T1.getPlayer().equals(agentName)) {
-				 	territories.remove(T1);
-				 	continue;
-				 }
+				// Check if this territory can attack. If not, get next territory.
+				if (T1.troops < 2) {
+					// System.out.println("You cannot attack from a territory with only one troop");
+					t += 1;
 
-				 // Check if this territory can attack. If not, get next territory.
-				 if (T1.troops < 2){
-					 // System.out.println("You cannot attack from a territory with only one troop");
-					 t += 1;
+					if (t == territories.size() - 1)
+						t = 0;
+				}
 
-					 if (t == territories.size() -1)
-						 t=0;
-				 }
+				srcCheck++;
+			} while (T1.troops < 2 && n < territories.size()); // Loop until find a territory with more than 2 troops
 
-				 n++;
-			 } while(T1.troops < 2 && n < territories.size());
+			if (T1.troops < 2)
+				return 0;
 
-			 if (T1.troops < 2){
-				 // System.out.println("You can no longer attack. Wait for more troops");
-				 return;
-			 }
-
-			 // Get destiny of attack
+			int check = 0;
 			game.Territory T2;
-			 do {
-				int f = random.nextInt(T1.frontiers.size() -1);
-				T2 = T1.frontiers.get(f);
-				n++;
-			 } while(T2.getPlayer().equals(agentName) && n < T1.frontiers.size());
-			 if (T1.getPlayer().equals(T2.getPlayer())) return;
-			 attack(T1,T2,T1.troops-1);
-			 return;
-		 }
+			// Get destiny of attack
+			int f = random.nextInt(T1.frontiers.size());
+			T2 = T1.frontiers.get(f);
 
-	 	public void attack(game.Territory T1, game.Territory T2, int n) {
+			srcDest[0] = T1;
+			srcDest[1] = T2;
+			n = T1.troops - 1;
+			return n;
+		}
+
+		public void moveTroops(game.Territory T1, game.Territory T2, int n){
+			// Check if number of troops are available. If not, move max (all -1)
+			if (n > T1.troops)
+				n = T1.troops - 1;
+
+			T1.troops -= n;
+			T2.troops += n;
+		}
+
+		public void attack(game.Territory T1, game.Territory T2, int n) {
 			// Print attacking informations
 			// From territory A with x troops to territory B with y troops.
- 			//System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
+			//System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
 
- 			if (n >= T1.getTroops()) {
-	 			//movimento invalido
-	 			//System.out.println("invalid movement");
-	 			return;
-	 		}
-	 		else if (n < T2.getTroops()) {
-	 			T1.removeTroops(n);
-	 			T2.removeTroops(n);
-				// Information about the attack
-				System.out.println("Player " + T1.getPlayer() + " attacked Territory " + Integer.toString(T2.terID) + " of player " + T2.getPlayer() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+			System.out.println("attack");
+			while (n >= T1.getTroops()) {
+				//movimento invalido
+				System.out.println("invalid movement");
+				n--;
+			}
 
-				// If conquered last territory, destroy player
-				//if (T2.player.getTerritories().size() == 1)
-				//	T2.player.takeDown();
-				//System.out.println("Attack from terr." + Integer.toString(T1.terID) + " (" + T1.getPlayer() + ") to terr." + Integer.toString(T2.terID) + " (" + T2.getPlayer() + ") failed");
-	 			return;
-	 		}
-
-	 		// Conquer
-	 		else if (n > T2.getTroops()) {
-	 			T1.removeTroops(n);
-	 			T2.setTroops(n -T2.getTroops());
-	 			addTerritory(T2);
-				System.out.println("Player " + T1.getPlayer() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.getPlayer() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+			if (n < T2.getTroops()) {
+				T1.removeTroops(n);
+				T2.removeTroops(n);
 				// Information after the attack
 				//System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-	 			return;
-	 		}
+				return;
+			}
 
-	 		// Stalemate
-	 		else if (n == T2.getTroops()) {
-	 			T1.removeTroops(n);
-	 			T2.setTroops(1);
+			// Conquer
+			else if (n > T2.getTroops()) {
+				T1.removeTroops(n);
+				T2.setTroops(n - T2.getTroops());
 
-				System.out.println("Player " + T1.getPlayer() + " attacked Territory " + Integer.toString(T2.terID) + " of player " + T2.getPlayer() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-	 			return;
-	 		}
-	 	}
+				// Information about the attack
+				// System.out.println("Player " + T1.player.getName() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.player.getName() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 
+				// If conquered last territory, destroy player
+				/*if (T2.player.getTerritories().size() == 1) {
+					System.out.println("Player " + T2.player.getName() + " has the following territories:");
+					for (game.Territory ter : T2.player.territories) {
+						System.out.println(ter.terID);
+					}
+					T2.player.takeDown();
+
+				}*/
+
+				addTerritory(T2);
+				return;
+			}
+			// Stalemate
+			else if (n == T2.getTroops()) {
+				T1.removeTroops(n);
+				T2.setTroops(1);
+				// Information after the attack
+				//System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+				return;
+			}
+		}
 
 
 		public boolean done() {
 			return false;
 		}
 	}
-
 }

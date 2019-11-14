@@ -105,7 +105,7 @@ public class Map extends Agent {
 			}
 		}
 
-		addBehaviour(new MapBehaviour(this, 1000));
+		addBehaviour(new MapBehaviour(this, 100));
 	}
 
 	class MapBehaviour extends Behaviour {
