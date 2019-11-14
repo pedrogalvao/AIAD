@@ -11,7 +11,6 @@ public class WarAgent extends Agent {
      *
      */
     private static final long serialVersionUID = 1L;
-
     private ArrayList<Territory> territories;
     private String agentName;
     private ArrayList<Behaviour> behaviours;
@@ -90,7 +89,7 @@ public class WarAgent extends Agent {
                 return;
 
             // If same owner, move troops. Else attack
-            if (srcDest[0].player.getName() == srcDest[1].player.getName())
+            if (srcDest[0].getPlayer().equals(srcDest[1].getPlayer()) )
             	moveTroops(srcDest[0], srcDest[1], numTroops);
 			else
 	            attack(srcDest[0], srcDest[1], numTroops);
@@ -202,5 +201,4 @@ public class WarAgent extends Agent {
             return false;
         }
     }
-
 }
