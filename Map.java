@@ -9,11 +9,14 @@ import jade.wrapper.StaleProxyException;
 
 import java.util.Random;
 
+import static java.lang.Thread.*;
+
 public class Map extends Agent {
 
     /**
      *
      */
+    public static final long freezeTime = 10000;
     private static final long serialVersionUID = 1L;
     private ArrayList<Territory> territories;
     private ArrayList<AgentController> agents;
@@ -46,6 +49,7 @@ public class Map extends Agent {
             try {
                 AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
                 this.agents.add(ac);
+                ac.start();
             } catch (StaleProxyException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -77,17 +81,11 @@ public class Map extends Agent {
             }
         }
 
-        System.out.println("map is created; starting agents");
-        for (AgentController ac : this.agents) {
-            try {
-                ac.start();
-                System.out.println("ac.start()");
-            } catch (StaleProxyException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+        try {
+            sleep(freezeTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-
         addBehaviour(new MapBehaviour(this, 1000));
     }
 

@@ -15,7 +15,7 @@ public class WarAgent extends Agent {
     private String agentName;
     private ArrayList<Behaviour> behaviours;
 
-    public void setup() {
+    public void setup()  {
         this.agentName = getAID().getName();
         System.out.println("Agent " + this.agentName + " setup");
 
@@ -24,6 +24,12 @@ public class WarAgent extends Agent {
         this.territories = (ArrayList<game.Territory>) args[0];
         for (game.Territory T : this.territories) {
             T.setPlayer(this);
+        }
+
+        try {
+            Thread.sleep(game.Map.freezeTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         // Adding behaviours
