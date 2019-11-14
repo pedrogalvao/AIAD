@@ -138,14 +138,19 @@ public class WarAgent extends Agent {
 
             srcDest[0] = T1;
             srcDest[1] = T2;
-            n = T1.troops - 1;
+            if (T1.troops > 1)
+                n = T1.troops - 1;
+            else
+                n = 0;
             return n;
         }
 
         public void moveTroops(Territory T1, Territory T2, int n){
 			// Check if number of troops are available. If not, move max (all -1)
-        	if (n > T1.troops)
-        		n = T1.troops - 1;
+        	if (n > T1.troops){
+                n = T1.troops - 1;
+                System.out.println("Moving too many troops. Now moving " + Integer.toString(n));
+            }
 
         	T1.troops -= n;
 			T2.troops += n;
@@ -156,14 +161,11 @@ public class WarAgent extends Agent {
             // From territory A with x troops to territory B with y troops.
             //System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
 
-            while (n >= T1.getTroops()) {
+            if (n >= T1.getTroops()) {
                 //movimento invalido
                 //System.out.println("invalid movement");
-                n--;
+                n = T1.getTroops() - 1;
             }
-
-            if (n < 1)
-            	return;
 
             if (n < T2.getTroops()) {
                 T1.removeTroops(n);
@@ -191,6 +193,8 @@ public class WarAgent extends Agent {
 
                 }
 
+                // Remove territory from T2 owner and add to T1 owner (attacker)
+                T2.player.removeTerritory(T2);
                 addTerritory(T2);
                 return;
             }
