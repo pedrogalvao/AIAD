@@ -71,7 +71,7 @@ public class IntelligentWarAgent extends game.WarAgent {
                     }
                 }
             }
-            if (maxdif - parameters[0] > 0) attack(src, dest, src.getTroops()-1);
+            if (maxdif - parameters[0] > 0) attackResults(src, dest, src.getTroops()-1);
         }
 
     }

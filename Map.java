@@ -108,15 +108,25 @@ public class Map extends Agent {
 
             block(this.delay);
 
+            // If one player conquered all territories, game is over
+            if (this.map.territories.get(0).player != null && this.map.territories.size() == this.map.territories.get(0).player.getTerritories().size() ){
+                System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getName() + " conquered all the territories.");
+                doDelete();
+                return;
+            }
+
+            // If not, add troops and inform game status
             System.out.println("Map status:");
 
             for (game.Territory T : this.map.territories) {
                 T.troops += 2;
-                if (!(T.player == null))
+                if (!(T.player == null)) {
                     System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.player.getName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
-                //System.out.println("Added troops to territory. Territory " + Integer.toString(T.terID) + " troops count is now: " + Integer.toString(T.troops));
+                }
             }
         }
+
+
 
         public boolean done() {
             return false;

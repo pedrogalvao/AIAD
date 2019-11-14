@@ -89,10 +89,10 @@ public class WarAgent extends Agent {
                 return;
 
             // If same owner, move troops. Else attack
-            if (srcDest[0].getPlayer().equals(srcDest[1].getPlayer()) )
+            if (srcDest[0].getPlayer().getName().equals(srcDest[1].getPlayer().getName() ) )
             	moveTroops(srcDest[0], srcDest[1], numTroops);
 			else
-	            attack(srcDest[0], srcDest[1], numTroops);
+	            attackResults(srcDest[0], srcDest[1], numTroops);
 
             return;
         }
@@ -145,16 +145,19 @@ public class WarAgent extends Agent {
 			T2.troops += n;
 		}
 
-        public void attack(Territory T1, Territory T2, int n) {
+        public void attackResults(Territory T1, Territory T2, int n) {
             // Print attacking informations
             // From territory A with x troops to territory B with y troops.
             //System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
 
             while (n >= T1.getTroops()) {
                 //movimento invalido
-                System.out.println("invalid movement");
+                //System.out.println("invalid movement");
                 n--;
             }
+
+            if (n < 1)
+            	return;
 
             if (n < T2.getTroops()) {
                 T1.removeTroops(n);
