@@ -27,7 +27,7 @@ public class IntelligentWarAgent extends game.WarAgent {
     }
 
     public void addTerritory(game.Territory T) {
-        T.setPlayer(this.agentName);
+        T.setPlayer(this);
         this.territories.add(T);
     }
 
