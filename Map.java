@@ -34,6 +34,7 @@ public class Map extends Agent {
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
 
+        System.out.println("Map mapAID " + this.getAID());
         ContainerController cc = getContainerController();
 
         // Creating territories and agents
@@ -84,6 +85,7 @@ public class Map extends Agent {
                 }
 
                 T.addFrontier(this.territories.get(k));
+                this.territories.get(k).addFrontier(T); // bidirectional frontiers
                 System.out.println("frontier " + Integer.toString(T.terID)+ " " + Integer.toString(this.territories.get(k).terID) );
             }
         }
@@ -211,8 +213,18 @@ public class Map extends Agent {
                 if (msg != null) {
                     String[] content = msg.getContent().split(map.delimiterChar);
                     System.out.println(msg.getContent());
-                    game.Territory T1 = territories.get(Integer.parseInt(content[1]));
-                    game.Territory T2 = territories.get(Integer.parseInt(content[2]));
+                    int t1id = Integer.parseInt(content[1]);
+                    int t2id = Integer.parseInt(content[2]);
+                    game.Territory T1, T2;
+                    if (t1id < this.map.territories.size())
+                        T1 = territories.get(t1id);
+                    else
+                        return;
+                    if (t2id < this.map.territories.size())
+                        T2 = territories.get(t2id);
+                    else
+                        return;
+
                     int n = Integer.parseInt(content[3]);
                     if (content[0].equals("A")) {
                         attackResults(T1, T2, n);
