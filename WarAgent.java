@@ -1,7 +1,9 @@
 package game;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.lang.acl.ACLMessage;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -14,11 +16,12 @@ public class WarAgent extends Agent {
     private ArrayList<Territory> territories;
     private String agentName;
     private ArrayList<Behaviour> behaviours;
+    private AID mapAID;
 
     public void setup()  {
         this.agentName = getAID().getName();
         System.out.println("Agent " + this.agentName + " setup");
-
+        mapAID = new AID("map", AID.ISLOCALNAME);
         Object[] args = getArguments();
 
         this.territories = (ArrayList<game.Territory>) args[0];
@@ -96,9 +99,9 @@ public class WarAgent extends Agent {
 
             // If same owner, move troops. Else attack
             if (srcDest[0].getPlayer().getName().equals(srcDest[1].getPlayer().getName() ) )
-            	moveTroops(srcDest[0], srcDest[1], numTroops);
+            	moveMessage(srcDest[0], srcDest[1], numTroops);
 			else
-	            attackResults(srcDest[0], srcDest[1], numTroops);
+	            attackMessage(srcDest[0], srcDest[1], numTroops);
 
             return;
         }
@@ -112,7 +115,13 @@ public class WarAgent extends Agent {
             int srcCheck = 0;
             do {
                 // Get origin of attack
-                t = random.nextInt(territories.size()); // 0 inclusive size exclusive
+                if (territories.size() == 0) {
+                    System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
+                    takeDown();
+                    return 0;
+                }
+                t = random.nextInt(territories.size()); // 0 inclusive size exclusive               }
+                if (t >= territories.size()) t = 0;
                 T1 = territories.get(t);
 
                 // Check if this territory can attack. If not, get next territory.
@@ -145,7 +154,7 @@ public class WarAgent extends Agent {
             return n;
         }
 
-        public void moveTroops(Territory T1, Territory T2, int n){
+        public void moveTroops(game.Territory T1, game.Territory T2, int n){
 			// Check if number of troops are available. If not, move max (all -1)
         	if (n > T1.troops){
                 n = T1.troops - 1;
@@ -156,58 +165,22 @@ public class WarAgent extends Agent {
 			T2.troops += n;
 		}
 
-        public void attackResults(Territory T1, Territory T2, int n) {
-            // Print attacking informations
-            // From territory A with x troops to territory B with y troops.
-            //System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
-
-            if (n >= T1.getTroops()) {
-                //movimento invalido
-                //System.out.println("invalid movement");
-                n = T1.getTroops() - 1;
-            }
-
-            if (n < T2.getTroops()) {
-                T1.removeTroops(n);
-                T2.removeTroops(n);
-                // Information after the attack
-                //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-                return;
-            }
-
-            // Conquer
-            else if (n > T2.getTroops()) {
-                T1.removeTroops(n);
-                T2.setTroops(n - T2.getTroops());
-
-                // Information about the attack
-                // System.out.println("Player " + T1.player.getName() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.player.getName() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-
-                // If conquered last territory, destroy player
-                if (T2.player.getTerritories().size() == 1) {
-                    System.out.println("Player " + T2.player.getName() + " has the following territories:");
-                    for (game.Territory ter : T2.player.territories) {
-                        System.out.println(ter.terID);
-                    }
-                    T2.player.takeDown();
-
-                }
-
-                // Remove territory from T2 owner and add to T1 owner (attacker)
-                T2.player.removeTerritory(T2);
-                addTerritory(T2);
-                return;
-            }
-
-            // Stalemate
-            else if (n == T2.getTroops()) {
-                T1.removeTroops(n);
-                T2.setTroops(1);
-                // Information after the attack
-                //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-                return;
-            }
+        public void attackMessage(Territory T1, Territory T2, int n) {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(new AID("map", AID.ISLOCALNAME));
+            msg.setContent("Attack " +Integer.toString(T1.getId()) + ' ' + Integer.toString(n) + ' ' + Integer.toString(T2.getId()));
+            System.out.println("send");
+            send(msg);
         }
+        public void moveMessage(Territory T1, Territory T2, int n) {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(mapAID);
+            msg.setContent("Move " + Integer.toString(T1.getId()) + ' ' + Integer.toString(n) + ' ' + Integer.toString(T2.getId()));
+            System.out.println("send");
+            send(msg);
+        }
+
+
 
 
         public boolean done() {

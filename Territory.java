@@ -46,8 +46,14 @@ public class Territory {
 		}
 	}
 
-	public WarAgent getPlayer() {
+	public game.WarAgent getPlayer() {
 		return this.player;
+	}
+	public void setPlayer(String name) {
+		this.playerName = name;
+	}
+	public String getPlayerName() {
+		return this.playerName;
 	}
 
 	public void setPlayer(WarAgent P) {
@@ -62,5 +68,8 @@ public class Territory {
 	public void addFrontier(Territory T) {
 		this.frontiers.add(T);
 		T.frontiers.add(this);
+	}
+	public int getId() {
+		return terID;
 	}
 }
