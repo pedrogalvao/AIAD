@@ -171,7 +171,7 @@ public class WarAgent extends Agent {
         public void attackMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
-            msg.setContent("Attack " +Integer.toString(T1.getId()) + ' ' + Integer.toString(n) + ' ' + Integer.toString(T2.getId()));
+            msg.setContent("Attack " +Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             //System.out.println("send");
             send(msg);
         }
@@ -179,13 +179,10 @@ public class WarAgent extends Agent {
         public void moveMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
-            msg.setContent("Move " + Integer.toString(T1.getId()) + ' ' + Integer.toString(n) + ' ' + Integer.toString(T2.getId()));
+            msg.setContent("Move " + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             //System.out.println("send");
             send(msg);
         }
-
-
-
 
         public boolean done() {
             return false;

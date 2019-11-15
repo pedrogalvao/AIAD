@@ -19,7 +19,11 @@ public class Map extends Agent {
     /**
      *
      */
+    // Global variables
     public static final long freezeTime = 1000;
+    public static final char delimiterChar = ' ';
+
+
     private static final long serialVersionUID = 1L;
     private ArrayList<game.Territory> territories;
     private ArrayList<AgentController> agents;
@@ -195,7 +199,7 @@ public class Map extends Agent {
                 ACLMessage msg = this.map.receive();
                 System.out.println(msg);
                 if (msg != null) {
-                    String[] content = msg.getContent().split(" ");
+                    String[] content = msg.getContent().split(map.delimiterChar);
                     System.out.println(msg.getContent());
                     if (content[0].equals("Attack")) {
                         game.Territory T1 = territories.get(Integer.parseInt(content[1]));
