@@ -89,6 +89,7 @@ public class Map extends Agent {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        addBehaviour(new MapListenerBehaviour(this));
         addBehaviour(new MapBehaviour(this, 1000));
     }
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
@@ -156,20 +157,6 @@ public class Map extends Agent {
         }
 
         public void action() {
-            while(true){
-                ACLMessage msg = this.map.receive();
-                System.out.println(msg);
-                if (msg != null) {
-                    String[] content = msg.getContent().split(" ");
-                    System.out.println(msg.getContent());
-                    if (content[0].equals("Attack")){
-                        game.Territory T1 = territories.get(Integer.parseInt(content[1]));
-                        game.Territory T2 = territories.get(Integer.parseInt(content[2]));
-                        attackResults(T1, T2, Integer.parseInt(content[3]));
-                    }
-                    break;
-                }
-            }/*
             block(this.delay);
 
             // If one player conquered all territories, game is over
@@ -187,14 +174,42 @@ public class Map extends Agent {
                 if (!(T.player == null)) {
                     System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.player.getName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
                 }
-            }*/
+            }
         }
 
-
-
-        public boolean done() {
+        // @Override some JADE method. Necessary
+        public boolean done(){
             return false;
         }
     }
 
+    class MapListenerBehaviour extends Behaviour {
+        public final game.Map map;
+
+        public MapListenerBehaviour(game.Map map){
+            this.map = map;
+        }
+
+        public void action() {
+            while (true) {
+                ACLMessage msg = this.map.receive();
+                System.out.println(msg);
+                if (msg != null) {
+                    String[] content = msg.getContent().split(" ");
+                    System.out.println(msg.getContent());
+                    if (content[0].equals("Attack")) {
+                        game.Territory T1 = territories.get(Integer.parseInt(content[1]));
+                        game.Territory T2 = territories.get(Integer.parseInt(content[2]));
+                        attackResults(T1, T2, Integer.parseInt(content[3]));
+                    }
+                    break;
+                }
+            }
+        }
+
+        // @Override some JADE method. Necessary
+        public boolean done(){
+            return false;
+        }
+    }
 }
