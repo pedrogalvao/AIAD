@@ -214,7 +214,7 @@ public class Map extends Agent {
                     String[] content = msg.getContent().split(map.delimiterChar);
                     System.out.println(msg.getContent());
                     int t1id = Integer.parseInt(content[1]);
-                    int t2id = Integer.parseInt(content[2]);
+                    int t2id = Integer.parseInt(content[3]);
                     game.Territory T1, T2;
                     if (t1id < this.map.territories.size())
                         T1 = territories.get(t1id);
@@ -225,7 +225,9 @@ public class Map extends Agent {
                     else
                         return;
 
-                    int n = Integer.parseInt(content[3]);
+                    int n = Integer.parseInt(content[2]);
+                    if (n >= T1.getTroops()) return;
+
                     if (content[0].equals("A")) {
                         attackResults(T1, T2, n);
                     } else if (content[0].equals("M")) {

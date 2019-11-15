@@ -75,12 +75,14 @@ public class WarAgent extends Agent {
         public static final long serialVersionUID = 1L;
 
         public void action() {
+
             this.attackTerritory();
             //this.communicate();
         }
 
 
         private void attackTerritory() {
+            block(100);
 
             // If agent doesn't have any more territories, take down agent
             if (territories.size() == 0) {
