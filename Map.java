@@ -21,7 +21,7 @@ public class Map extends Agent {
      */
     // Global variables
     public static final long freezeTime = 1000;
-    public static final char delimiterChar = ' ';
+    public static final String delimiterChar = " ";
 
 
     private static final long serialVersionUID = 1L;
@@ -145,6 +145,16 @@ public class Map extends Agent {
             return;
         }
     }
+    public void moveTroops(game.Territory T1, game.Territory T2, int n){
+        // Check if number of troops are available. If not, move max (all -1)
+        if (n > T1.troops){
+            n = T1.troops - 1;
+            System.out.println("Moving too many troops. Now moving " + Integer.toString(n));
+        }
+
+        T1.troops -= n;
+        T2.troops += n;
+    }
 
 
     class MapBehaviour extends Behaviour {
@@ -197,14 +207,17 @@ public class Map extends Agent {
         public void action() {
             while (true) {
                 ACLMessage msg = this.map.receive();
-                System.out.println(msg);
+                //System.out.println(msg);
                 if (msg != null) {
                     String[] content = msg.getContent().split(map.delimiterChar);
                     System.out.println(msg.getContent());
-                    if (content[0].equals("Attack")) {
-                        game.Territory T1 = territories.get(Integer.parseInt(content[1]));
-                        game.Territory T2 = territories.get(Integer.parseInt(content[2]));
-                        attackResults(T1, T2, Integer.parseInt(content[3]));
+                    game.Territory T1 = territories.get(Integer.parseInt(content[1]));
+                    game.Territory T2 = territories.get(Integer.parseInt(content[2]));
+                    int n = Integer.parseInt(content[3]);
+                    if (content[0].equals("A")) {
+                        attackResults(T1, T2, n);
+                    } else if (content[0].equals("M")) {
+                        moveTroops(T1, T2, n);
                     }
                     break;
                 }

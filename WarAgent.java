@@ -46,19 +46,15 @@ public class WarAgent extends Agent {
         T.setPlayer(this);
         this.territories.add(T);
     }
-
     public void removeTerritory(Territory T) {
         this.territories.remove(T);
     }
-
     public ArrayList<Territory> getTerritories() {
         return territories;
     }
-
     public String getAgentName() {
         return this.agentName;
     }
-
     public void takeDown() {
         System.out.println("Agent " + this.getName() + " has died (out of territories");
 
@@ -157,21 +153,10 @@ public class WarAgent extends Agent {
             return n;
         }
 
-        public void moveTroops(game.Territory T1, game.Territory T2, int n){
-			// Check if number of troops are available. If not, move max (all -1)
-        	if (n > T1.troops){
-                n = T1.troops - 1;
-                System.out.println("Moving too many troops. Now moving " + Integer.toString(n));
-            }
-
-        	T1.troops -= n;
-			T2.troops += n;
-		}
-
         public void attackMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
-            msg.setContent("Attack " +Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
+            msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             //System.out.println("send");
             send(msg);
         }
@@ -179,7 +164,7 @@ public class WarAgent extends Agent {
         public void moveMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
-            msg.setContent("Move " + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
+            msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             //System.out.println("send");
             send(msg);
         }
