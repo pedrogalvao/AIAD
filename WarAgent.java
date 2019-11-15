@@ -113,6 +113,7 @@ public class WarAgent extends Agent {
             do {
                 // Get origin of attack
                 t = random.nextInt(territories.size()); // 0 inclusive size exclusive
+                // TODO: Colocar if pra conferir se tá fora do limite da lista
                 T1 = territories.get(t);
 
                 // Check if this territory can attack. If not, get next territory.
