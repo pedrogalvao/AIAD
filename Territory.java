@@ -1,14 +1,15 @@
 package game;
 
+import jade.core.AID;
+
 import java.util.ArrayList;
 
 public class Territory {
 	public static int terCount;
 	public int terID;
-	public WarAgent player;
-	public String playerName;
 	public int troops;
 	public ArrayList<Territory> frontiers;
+	private AID player;
 
 	public Territory() {
 		this.terID = terCount;
@@ -16,14 +17,6 @@ public class Territory {
 		this.troops = 2;
 		this.frontiers = new ArrayList<Territory>(0);
 		this.player = null;
-	}
-
-	public Territory(WarAgent player) {
-		this.terID = terCount;
-		terCount++;
-		this.troops = 2;
-		this.frontiers = new ArrayList<Territory>(0);
-		this.player = player;
 	}
 
 	public int getTroops() {
@@ -46,21 +39,12 @@ public class Territory {
 		}
 	}
 
-	public game.WarAgent getPlayer() {
+	public void setPlayer(AID playerAID) {
+		this.player = playerAID;
+	}
+	public AID getPlayer() {
 		return this.player;
 	}
-	public void setPlayer(String name) {
-		this.playerName = name;
-	}
-	public String getPlayerName() {
-		return this.playerName;
-	}
-
-	public void setPlayer(WarAgent P) {
-		//if (this.player != null) this.player.removeTerritory(this);
-		this.player = P;
-	}
-
 	public ArrayList<Territory> getFrontiers(){
 		return this.frontiers;
 	}

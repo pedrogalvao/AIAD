@@ -28,7 +28,7 @@ public class WarAgent extends Agent {
 
         this.territories = (ArrayList<game.Territory>) args[0];
         for (game.Territory T : this.territories) {
-            T.setPlayer(this);
+            T.setPlayer(this.getAID());
         }
 
         try {
@@ -44,14 +44,14 @@ public class WarAgent extends Agent {
         addBehaviour(attackingBehaviour);
     }
 
-    public void addTerritory(Territory T) {
-        T.setPlayer(this);
+    public void addTerritory(game.Territory T) {
+        T.setPlayer(this.getAID());
         this.territories.add(T);
     }
-    public void removeTerritory(Territory T) {
+    public void removeTerritory(game.Territory T) {
         this.territories.remove(T);
     }
-    public ArrayList<Territory> getTerritories() {
+    public ArrayList<game.Territory> getTerritories() {
         return territories;
     }
     public String getAgentName() {
@@ -82,7 +82,6 @@ public class WarAgent extends Agent {
 
 
         private void attackTerritory() {
-            block(100);
 
             // If agent doesn't have any more territories, take down agent
             if (territories.size() == 0) {
@@ -92,13 +91,13 @@ public class WarAgent extends Agent {
             }
 
             // Select territories to attack and troop amount
-            Territory[] srcDest = new Territory[2];
+            game.Territory[] srcDest = new game.Territory[2];
             int numTroops = selectAttack(srcDest);
             if (0 == numTroops)
                 return;
 
             // If same owner, move troops. Else attack
-            if (srcDest[0].getPlayer().getName().equals(srcDest[1].getPlayer().getName() ) )
+            if (srcDest[0].getPlayer().equals(srcDest[1].getPlayer() ) )
             	moveMessage(srcDest[0], srcDest[1], numTroops);
 			else
 	            attackMessage(srcDest[0], srcDest[1], numTroops);
@@ -106,10 +105,10 @@ public class WarAgent extends Agent {
             return;
         }
 
-        public int selectAttack(Territory[] srcDest) {
+        public int selectAttack(game.Territory[] srcDest) {
             Random random = new Random();
             int t;
-            Territory T1;
+            game.Territory T1;
             int n = 0; // Default not attacking
 
             int srcCheck = 0;
@@ -143,7 +142,7 @@ public class WarAgent extends Agent {
                 return 0;
 
             int check = 0;
-            Territory T2;
+            game.Territory T2;
             // Get destiny of attack
 			int f = random.nextInt(T1.frontiers.size());
 			T2 = T1.frontiers.get(f);
@@ -157,19 +156,31 @@ public class WarAgent extends Agent {
             return n;
         }
 
-        public void attackMessage(Territory T1, Territory T2, int n) {
+        public void attackMessage(game.Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
-            //System.out.println("send");
             send(msg);
+
+            while (true) {
+                ACLMessage resultMsg = receive();
+                //System.out.println(msg);
+                if (resultMsg != null) {
+                    String content = resultMsg.getContent();
+                    if (content.equals("V")) {
+                        addTerritory(T2);
+                        break;
+                    }
+                    else if (content.equals("F") || content.equals("I"))
+                        break;
+                }
+            }
         }
 
         public void moveMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
-            //System.out.println("send");
             send(msg);
         }
 

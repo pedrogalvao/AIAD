@@ -106,6 +106,10 @@ public class Map extends Agent {
         if (n >= T1.getTroops()) {
             //movimento invalido
             //System.out.println("invalid movement");
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(T1.getPlayer());
+            msg.setContent("F"); // F for Failure
+            send(msg);
             n = T1.getTroops() - 1;
         }
 
@@ -114,6 +118,11 @@ public class Map extends Agent {
             T2.removeTroops(n);
             // Information after the attack
             //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(T1.getPlayer());
+            msg.setContent("F"); // F for Failure
+            send(msg);
             return;
         }
 
@@ -125,15 +134,10 @@ public class Map extends Agent {
             // Information about the attack
             // System.out.println("Player " + T1.player.getName() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.player.getName() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 
-            // If conquered last territory, destroy player
-            if (T2.player.getTerritories().size() == 1) {
-                System.out.println("Player " + T2.getPlayerName() + " has the following territories:");
-                for (game.Territory ter : T2.player.getTerritories()) {
-                    System.out.println(ter.terID);
-                }
-                T2.player.takeDown();
-            }
-
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(T1.getPlayer());
+            msg.setContent("V"); // V for Victory
+            send(msg);
             // Remove territory from T2 owner and add to T1 owner (attacker)
             T2.setPlayer(T1.getPlayer());
             return;
@@ -142,9 +146,13 @@ public class Map extends Agent {
         else if (n == T2.getTroops()) {
             T1.removeTroops(n);
             T2.setTroops(1);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(T1.getPlayer());
+            msg.setContent("F"); // F for Failure
+            send(msg);
+            return;
             // Information after the attack
             //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
-            return;
         }
     }
     public void moveTroops(game.Territory T1, game.Territory T2, int n){
@@ -175,22 +183,26 @@ public class Map extends Agent {
         public void action() {
             block(this.delay);
 
+
+            // If not, add troops and inform game status
+            System.out.println("Map status:");
+            Boolean done = true;
+            String P0 = this.map.territories.get(0).getPlayer().getLocalName();
+            for (game.Territory T : this.map.territories) {
+                T.troops += 2;
+                if (!(T.getPlayer() == null)) {
+                    if (!T.getPlayer().getLocalName().equals(P0)) done = false;
+                    System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.getPlayer().getLocalName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
+                }
+            }
             // If one player conquered all territories, game is over
-            if (this.map.territories.get(0).getPlayerName() != null && this.map.territories.size() == this.map.territories.get(0).player.getTerritories().size() ){
-                System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getName() + " conquered all the territories.");
+
+            if ( done ){
+                System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
                 doDelete();
                 return;
             }
 
-            // If not, add troops and inform game status
-            System.out.println("Map status:");
-
-            for (game.Territory T : this.map.territories) {
-                T.troops += 2;
-                if (!(T.player == null)) {
-                    System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.player.getName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
-                }
-            }
         }
 
         // @Override some JADE method. Necessary
@@ -202,7 +214,7 @@ public class Map extends Agent {
     class MapListenerBehaviour extends Behaviour {
         public final game.Map map;
 
-        public MapListenerBehaviour(game.Map map){
+        public MapListenerBehaviour(game.Map map) {
             this.map = map;
         }
 
@@ -211,32 +223,57 @@ public class Map extends Agent {
                 ACLMessage msg = this.map.receive();
                 //System.out.println(msg);
                 if (msg != null) {
-                    String[] content = msg.getContent().split(map.delimiterChar);
-                    System.out.println(msg.getContent());
-                    int t1id = Integer.parseInt(content[1]);
-                    int t2id = Integer.parseInt(content[3]);
-                    game.Territory T1, T2;
-                    if (t1id < this.map.territories.size())
-                        T1 = territories.get(t1id);
-                    else
-                        return;
-                    if (t2id < this.map.territories.size())
-                        T2 = territories.get(t2id);
-                    else
-                        return;
-
-                    int n = Integer.parseInt(content[2]);
-                    if (n >= T1.getTroops()) return;
-
-                    if (content[0].equals("A")) {
-                        attackResults(T1, T2, n);
-                    } else if (content[0].equals("M")) {
-                        moveTroops(T1, T2, n);
-                    }
-                    break;
+                    processMessage(msg);
                 }
+                break;
             }
         }
+
+        public void processMessage(ACLMessage msg) {
+            String[] content = msg.getContent().split(map.delimiterChar);
+            System.out.println(msg.getContent());
+            AID msgSender = msg.getSender();
+            if (content[0].equals("A") || content[0].equals("M")) {
+
+                int t1id = Integer.parseInt(content[1]);
+                int t2id = Integer.parseInt(content[3]);
+                game.Territory T1, T2;
+                if (t1id < this.map.territories.size())
+                    T1 = territories.get(t1id);
+                else {
+                    System.out.println("invalid movement");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+                if (t2id < this.map.territories.size())
+                    T2 = territories.get(t2id);
+                else {
+                    System.out.println("invalid movement");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+                int n = Integer.parseInt(content[2]);
+                if (n >= T1.getTroops()) {
+                    System.out.println("invalid movement");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+                if (content[0].equals("A")) attackResults(T1, T2, n);
+                else if (content[0].equals("M")) moveTroops(T1, T2, n);
+                return;
+            }
+
+        }
+
 
         // @Override some JADE method. Necessary
         public boolean done(){
