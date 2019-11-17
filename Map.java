@@ -108,7 +108,7 @@ public class Map extends Agent {
             //System.out.println("invalid movement");
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(T1.getPlayer());
-            msg.setContent("F"); // F for Failure
+            msg.setContent("I"); // F for Failure
             send(msg);
             n = T1.getTroops() - 1;
         }
@@ -164,6 +164,10 @@ public class Map extends Agent {
 
         T1.troops -= n;
         T2.troops += n;
+    }
+
+    public void informAgent(ACLMessage msg, AID destiny){
+
     }
 
 
@@ -235,46 +239,49 @@ public class Map extends Agent {
             System.out.println(msg.getContent());
             AID msgSender = msg.getSender();
 
-            // Get msg content
-            int t1id = Integer.parseInt(content[1]);
-            int n = Integer.parseInt(content[2]);
-            int t2id = Integer.parseInt(content[3]);
+            if (content[0].equals("A") || content[0].equals("M")) {
 
-            // Instantiate territories involved in the play
-            game.Territory T1, T2;
-            if (t1id < this.map.territories.size())
-                T1 = territories.get(t1id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
-            else {
-                System.out.println("Invalid. Territory out of map");
-                ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-                msg2.addReceiver(msgSender);
-                msg2.setContent("I"); // I for Invalid
-                send(msg);
-                return;
-            }
-            if (t2id < this.map.territories.size())
-                T2 = territories.get(t2id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
-            else {
-                System.out.println("Invalid. Territory out of map");
-                ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-                msg2.addReceiver(msgSender);
-                msg2.setContent("I"); // I for Invalid
-                send(msg);
-                return;
-            }
+                // Get msg content
+                int t1id = Integer.parseInt(content[1]);
+                int n = Integer.parseInt(content[2]);
+                int t2id = Integer.parseInt(content[3]);
 
-            // Validate number of troops
-            if (n >= T1.getTroops()) {
-                System.out.println("Invalid. Attacking with more troops than the territory currently have");
-                ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
-                msg2.addReceiver(msgSender);
-                msg2.setContent("I"); // I for Invalid
-                send(msg);
+                // Instantiate territories involved in the play
+                game.Territory T1, T2;
+                if (t1id < this.map.territories.size())
+                    T1 = territories.get(t1id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
+                else {
+                    System.out.println("Invalid. Territory out of map");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+                if (t2id < this.map.territories.size())
+                    T2 = territories.get(t2id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
+                else {
+                    System.out.println("Invalid. Territory out of map");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+
+                // Validate number of troops
+                if (n >= T1.getTroops()) {
+                    System.out.println("Invalid. Attacking with more troops than the territory currently have");
+                    ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                    msg2.addReceiver(msgSender);
+                    msg2.setContent("I"); // I for Invalid
+                    send(msg);
+                    return;
+                }
+                if (content[0].equals("A")) attackResults(T1, T2, n);
+                else if (content[0].equals("M")) moveTroops(T1, T2, n);
                 return;
             }
-            if (content[0].equals("A")) attackResults(T1, T2, n);
-            else if (content[0].equals("M")) moveTroops(T1, T2, n);
-            return;
         }
 
 
