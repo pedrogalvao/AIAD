@@ -103,26 +103,22 @@ public class Map extends Agent {
         // From territory A with x troops to territory B with y troops.
         //System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
 
+        // If number of troops is higher than territory amount, send the maximum
+        // TODO: Change that once agents are smarter. They might want to re-evaluate
         if (n >= T1.getTroops()) {
             //movimento invalido
             //System.out.println("invalid movement");
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(T1.getPlayer());
-            msg.setContent("I"); // F for Failure
-            send(msg);
             n = T1.getTroops() - 1;
         }
 
+        // Result: No status change
         if (n < T2.getTroops()) {
             T1.removeTroops(n);
             T2.removeTroops(n);
-            // Information after the attack
-            //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
 
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(T1.getPlayer());
-            msg.setContent("F"); // F for Failure
-            send(msg);
+            // Inform players involved
+            informAgent(T1.getPlayer(), "N", T1.getId(), T1.troops);
+            informAgent(T2.getPlayer(), "N", T2.getId(), T2.troops);
             return;
         }
 
@@ -131,13 +127,13 @@ public class Map extends Agent {
             T1.removeTroops(n);
             T2.setTroops(n - T2.getTroops());
 
-            // Information about the attack
-            // System.out.println("Player " + T1.player.getName() + " conquered Territory " + Integer.toString(T2.terID) + " from player " + T2.player.getName() + " and now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
+            // Inform player 1 about previous territory and conquered territory
+            informAgent(T1.getPlayer(), "N", T1.getId(), T1.troops);
+            informAgent(T1.getPlayer(), "C", T1.getId(), T2.getId(), T2.troops);
 
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(T1.getPlayer());
-            msg.setContent("V"); // V for Victory
-            send(msg);
+            // Inform player 2 about lost territory
+            informAgent(T2.getPlayer(), "L", T2.getId(), T2.troops);
+
             // Remove territory from T2 owner and add to T1 owner (attacker)
             T2.setPlayer(T1.getPlayer());
             return;
@@ -146,15 +142,14 @@ public class Map extends Agent {
         else if (n == T2.getTroops()) {
             T1.removeTroops(n);
             T2.setTroops(1);
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(T1.getPlayer());
-            msg.setContent("F"); // F for Failure
-            send(msg);
+
+            // Inform players involved
+            informAgent(T1.getPlayer(), "N", T1.getId(), T1.troops);
+            informAgent(T2.getPlayer(), "N", T2.getId(), T2.troops);
             return;
-            // Information after the attack
-            //System.out.println("Territory " + Integer.toString(T1.terID) + " now has " + Integer.toString(T1.troops) + " troops and Territory " + Integer.toString(T2.terID) + " has " + Integer.toString(T2.troops) + " troops");
         }
     }
+
     public void moveTroops(game.Territory T1, game.Territory T2, int n){
         // Check if number of troops are available. If not, move max (all -1)
         if (n > T1.troops){
@@ -164,10 +159,46 @@ public class Map extends Agent {
 
         T1.troops -= n;
         T2.troops += n;
+
+        // Inform player
+        informAgent(T1.getPlayer(), "N", T1.getId(), T1.troops);
+        informAgent(T1.getPlayer(), "N", T2.getId(), T2.troops);
+        return;
     }
 
-    public void informAgent(ACLMessage msg, AID destiny){
+    public void informAgent(AID player, String status, int terID, int numTroops){
+        /**
+         * Informs the player about changes in the territory according to the following protocol:
+         * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid)
+         * Which territory (terID)
+         * How many troops there are now in the territory
+         *
+         */
 
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(player);
+
+        String msgCont = status + this.delimiterChar + Integer.toString(terID) + this.delimiterChar + Integer.toString(numTroops);
+        msg.setContent(msgCont);
+        send(msg);
+    }
+    public void informAgent(AID player, String status, int terIDOrig, int terIDDest, int numTroops){
+        /**
+         * Informs the player about changes in the territory according to the following protocol:
+         * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid)
+         * Which territory (terID)
+         * Msg for conquered territory also includes orign of attack, so we can add the territory from inside the player via frontiers
+         * How many troops there are now in the territory
+         *
+         *
+         */
+
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(player);
+
+        String msgCont = status + this.delimiterChar + Integer.toString(terIDOrig) + this.delimiterChar + Integer.toString(terIDDest) + Integer.toString(numTroops);
+        msg.setContent(msgCont);
+        send(msg);
     }
 
 
@@ -240,7 +271,6 @@ public class Map extends Agent {
             AID msgSender = msg.getSender();
 
             if (content[0].equals("A") || content[0].equals("M")) {
-
                 // Get msg content
                 int t1id = Integer.parseInt(content[1]);
                 int n = Integer.parseInt(content[2]);

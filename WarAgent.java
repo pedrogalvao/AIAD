@@ -31,6 +31,7 @@ public class WarAgent extends Agent {
             T.setPlayer(this.getAID());
         }
 
+        // Freeze time before game starts
         try {
             Thread.sleep(game.Map.freezeTime);
         } catch (InterruptedException e) {
@@ -39,17 +40,27 @@ public class WarAgent extends Agent {
 
         // Adding behaviours
         this.behaviours = new ArrayList<Behaviour>();
+
+        // Attacking behaviour
         Behaviour attackingBehaviour = new WarBehaviour();
         behaviours.add(attackingBehaviour);
         addBehaviour(attackingBehaviour);
+
+        // Listening behaviour
+        /*
+        Behaviour listeningBehaviour = new WarListener(this);
+        behaviours.add(listeningBehaviour);
+        addBehaviour(listeningBehaviour);
+
+         */
     }
 
     public void addTerritory(game.Territory T) {
-        T.setPlayer(this.getAID());
         this.territories.add(T);
     }
-    public void removeTerritory(game.Territory T) {
-        this.territories.remove(T);
+    public void removeTerritory(game.Territory ter) {
+        this.territories.remove(ter);
+
         if (this.territories.size() == 0)
             this.takeDown();
     }
@@ -75,7 +86,7 @@ public class WarAgent extends Agent {
          *
          */
         public static final long serialVersionUID = 1L;
-        private static final long delay = 1000;
+        private static final long delay = 1000; // Delay so map can process messages
 
         public void action() {
 
@@ -85,8 +96,6 @@ public class WarAgent extends Agent {
             // Blocking agents so map can process all the messages
             block(delay);
         }
-
-
         private void attackTerritory() {
 
             // If agent doesn't have any more territories, take down agent
@@ -110,7 +119,6 @@ public class WarAgent extends Agent {
 
             return;
         }
-
         public int selectAttack(game.Territory[] srcDest) {
             Random random = new Random();
             int t;
@@ -161,33 +169,121 @@ public class WarAgent extends Agent {
                 n = 0;
             return n;
         }
-
         public void attackMessage(game.Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             send(msg);
-
-            while (true) {
-                ACLMessage resultMsg = receive();
-                //System.out.println(msg);
-                if (resultMsg != null) {
-                    String content = resultMsg.getContent();
-                    if (content.equals("V")) {
-                        addTerritory(T2);
-                        break;
-                    }
-                    else if (content.equals("F") || content.equals("I"))
-                        break;
-                }
-            }
         }
-
         public void moveMessage(Territory T1, Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             send(msg);
+        }
+        public boolean done() {
+            return false;
+        }
+    }
+
+    class WarListener extends Behaviour {
+
+        private WarAgent player;
+
+        public WarListener (WarAgent player){
+            this.player = player;
+        }
+
+        public void action(){
+            ACLMessage msg = this.player.receive();
+            processMessage(msg);
+        }
+
+        public void processMessage(ACLMessage msg){
+            if (msg == null)
+                return;
+
+            // Get sender and send msg to the right "inbox"
+            AID msgSender = msg.getSender();
+
+            if (msgSender == mapAID){
+                mapMessage(msg);
+                return;
+            }
+
+
+        }
+
+        public void mapMessage(ACLMessage msg){
+            /**
+             * Receives msg from the map according to the following protocol:
+             * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid)
+             * Which territory (terID)
+             * How many troops there are now in the territory
+             *
+             */
+
+            String[] content = msg.getContent().split(game.Map.delimiterChar);
+
+            // Invalid movement
+            if (content[0].equals("I"))
+                return;
+
+            // Lost territory
+            if (content[0].equals("L")){
+                int terID = Integer.parseInt(content[1]);
+                game.Territory ter = null;
+
+                for (Territory t : territories){
+                    if (t.getId() == terID) {
+                        ter = t;
+                        break;
+                    }
+                }
+
+                if (ter != null){
+                    removeTerritory(ter);
+                } else{
+                    System.out.println("Removing err. Territory not found");
+                }
+                return;
+            }
+
+            // Conquered territory
+            if (content[0].equals("C")){
+                game.Territory ter = null;
+                game.Territory tDest = null;
+                int origID = Integer.parseInt(content[1]);
+                int destID = Integer.parseInt(content[2]);
+
+                for (Territory t : territories){
+                    if (t.getId() == origID){
+                        ter = t;
+                        break;
+                    }
+                }
+
+                if (ter != null){
+                    for (Territory t : ter.frontiers){
+                        if (t.getId() == destID){
+                            tDest = t;
+                            break;
+                        }
+                    }
+
+                    if (tDest != null){
+                        addTerritory(tDest);
+                        return;
+                    } else {
+                        System.out.println("Conquering ERR: Couldn't find conquered territory in frontiers from origin territory");
+                    }
+
+                } else{
+                    System.out.println("Conquering ERR: Orign of conquering attack not found.");
+                }
+            }
+
+            // Change status of territory (not yet implemented because currently acquiring information from map directly)
         }
 
         public boolean done() {
