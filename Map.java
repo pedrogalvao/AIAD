@@ -200,6 +200,22 @@ public class Map extends Agent {
         msg.setContent(msgCont);
         send(msg);
     }
+    public void takeDown(){
+        this.territories = null;
+
+        for (AgentController ac : this.agents){
+            if (ac != null) {
+                try {
+                    ac.kill();
+                } catch (StaleProxyException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        this.agents = null;
+
+        doDelete();
+    }
 
 
     class MapBehaviour extends Behaviour {
@@ -234,7 +250,7 @@ public class Map extends Agent {
 
             if ( done ){
                 System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
-                doDelete();
+                takeDown();
                 return;
             }
 
@@ -254,20 +270,17 @@ public class Map extends Agent {
         }
 
         public void action() {
-            while (true) {
-                ACLMessage msg = this.map.receive();
-                //System.out.println(msg);
-                if (msg != null) {
-                    processMessage(msg);
-                }
-                break;
+            ACLMessage msg = this.map.receive();
+            //System.out.println(msg);
+            if (msg != null) {
+                processMessage(msg);
             }
         }
 
         public void processMessage(ACLMessage msg) {
             // Process messages
             String[] content = msg.getContent().split(map.delimiterChar);
-            System.out.println(msg.getContent());
+            //System.out.println(msg.getContent());
             AID msgSender = msg.getSender();
 
             if (content[0].equals("A") || content[0].equals("M")) {

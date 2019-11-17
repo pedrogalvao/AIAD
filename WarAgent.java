@@ -47,12 +47,9 @@ public class WarAgent extends Agent {
         addBehaviour(attackingBehaviour);
 
         // Listening behaviour
-        /*
         Behaviour listeningBehaviour = new WarListener(this);
         behaviours.add(listeningBehaviour);
         addBehaviour(listeningBehaviour);
-
-         */
     }
 
     public void addTerritory(game.Territory T) {
@@ -203,10 +200,12 @@ public class WarAgent extends Agent {
             if (msg == null)
                 return;
 
+            //System.out.println(msg.getContent());
+
             // Get sender and send msg to the right "inbox"
             AID msgSender = msg.getSender();
 
-            if (msgSender == mapAID){
+            if (msgSender.equals(mapAID)){
                 mapMessage(msg);
                 return;
             }
@@ -246,6 +245,7 @@ public class WarAgent extends Agent {
                 } else{
                     System.out.println("Removing err. Territory not found");
                 }
+                System.out.println("Removed territory");
                 return;
             }
 
@@ -255,6 +255,8 @@ public class WarAgent extends Agent {
                 game.Territory tDest = null;
                 int origID = Integer.parseInt(content[1]);
                 int destID = Integer.parseInt(content[2]);
+
+                System.out.println("Conquered territory");
 
                 for (Territory t : territories){
                     if (t.getId() == origID){
