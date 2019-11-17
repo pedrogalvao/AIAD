@@ -27,7 +27,7 @@ public class IntelligentWarAgent extends game.WarAgent {
     }
 
     public void addTerritory(game.Territory T) {
-        T.setPlayer(this);
+        T.setPlayer(this.getAID());
         this.territories.add(T);
     }
 
@@ -62,7 +62,7 @@ public class IntelligentWarAgent extends game.WarAgent {
             maxdif = src.getTroops() - dest.getTroops();
             for (game.Territory T1 : territories) {
                 for (game.Territory T2 : T1.getFrontiers()) {
-                    if (T1.getPlayer().equals(T2.getPlayer())) continue;
+                    if (T1.getPlayer().getLocalName().equals(T2.getPlayer().getLocalName())) continue;
                     dif = T1.getTroops() - T2.getTroops();
                     if (dif > maxdif) {
                         maxdif = dif;
@@ -71,7 +71,7 @@ public class IntelligentWarAgent extends game.WarAgent {
                     }
                 }
             }
-            //if (maxdif - parameters[0] > 0) attackResults(src, dest, src.getTroops()-1);
+            if (maxdif - parameters[0] > 0) attackMessage(src, dest, src.getTroops()-1);
         }
 
     }
