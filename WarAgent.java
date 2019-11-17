@@ -12,11 +12,20 @@ public class WarAgent extends Agent {
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
-    private ArrayList<Territory> territories;
-    private String agentName;
-    private ArrayList<Behaviour> behaviours;
-    private AID mapAID;
+    public static final String delimiterChar = " ";
+    public static final String BREAK_ALLIANCE = "B";
+    public static final String PROPOSE_ALLIANCE = "P";
+    public static final String ACCEPT_ALLIANCE = "Y";
+    public static final String REJECT_ALLIANCE = "Y";
+    public static final String REQUEST_INFO = "R";
+    public static final String ATTACK = "A";
+    public static final String MOVE = "M";
+
+    protected static final long serialVersionUID = 1L;
+    protected ArrayList<game.Territory> territories;
+    protected String agentName;
+    protected ArrayList<Behaviour> behaviours;
+    protected AID mapAID;
 
     public void setup()  {
         this.agentName = getAID().getName();
@@ -183,7 +192,7 @@ public class WarAgent extends Agent {
         }
     }
 
-    class WarListener extends Behaviour {
+    protected class WarListener extends Behaviour {
 
         private WarAgent player;
 
@@ -209,7 +218,6 @@ public class WarAgent extends Agent {
                 mapMessage(msg);
                 return;
             }
-
 
         }
 

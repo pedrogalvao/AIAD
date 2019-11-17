@@ -22,6 +22,8 @@ public class Map extends Agent {
     // Global variables
     public static final long freezeTime = 1000;
     public static final String delimiterChar = " ";
+    public static final String INFORM = "I";
+
 
 
     private static final long serialVersionUID = 1L;
@@ -40,7 +42,7 @@ public class Map extends Agent {
         // Creating territories and agents
         for (int j=0; j < numberAgents; j++){
             ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
-            Object[] args = new Object[1];
+            Object[] args = new Object[2];
 
             // Creating territories
             for (int i = 0; i < numberTerritories/numberAgents; i++) {
@@ -54,8 +56,9 @@ public class Map extends Agent {
             // Creating agent to get the territories created above
             System.out.println("Creating agent " + Integer.toString(j));
             args[0] = agentsTerritories;
+            args[1] = new float[]{0,1,1,0,0,0,0};
             try {
-                AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
+                AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
                 this.agents.add(ac);
                 ac.start();
             } catch (StaleProxyException e) {
