@@ -209,10 +209,14 @@ public class Map extends Agent {
                 ACLMessage msg = this.map.receive();
                 //System.out.println(msg);
                 if (msg != null) {
-                    String[] content = msg.getContent().split(map.delimiterChar);
                     System.out.println(msg.getContent());
+
+                    // Get msg content
+                    String[] content = msg.getContent().split(map.delimiterChar);
                     game.Territory T1 = territories.get(Integer.parseInt(content[1]));
                     game.Territory T2 = territories.get(Integer.parseInt(content[2]));
+
+                    // Decide action
                     int n = Integer.parseInt(content[3]);
                     if (content[0].equals("A")) {
                         attackResults(T1, T2, n);

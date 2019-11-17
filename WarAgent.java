@@ -71,10 +71,14 @@ public class WarAgent extends Agent {
          *
          */
         public static final long serialVersionUID = 1L;
+        private static final long delay = 1000;
 
         public void action() {
             this.attackTerritory();
             //this.communicate();
+
+            // Blocking agents so map can process all the messages
+            block(delay);
         }
 
 
