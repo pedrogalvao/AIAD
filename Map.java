@@ -212,8 +212,8 @@ public class Map extends Agent {
                 }
             }
         }
-        this.agents = null;
 
+        this.agents = null;
         doDelete();
     }
 
