@@ -20,6 +20,13 @@ Agents have the following behaviours:
 
 
 
+# Feedback prof
+
+- Aumentar a complexidade da negociação
+- Fornecer argumentos de execução como parâmetro
+
+
+
 ### Communication strategies
 
 - Make alliances with the player that has most territories / troops
