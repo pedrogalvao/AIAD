@@ -1,6 +1,5 @@
 package game;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;

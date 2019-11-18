@@ -25,20 +25,23 @@ public class Map extends Agent {
     public static final String INFORM = "W";
     public static final String INVALID_MOVE = "I";
 
-
+    public static final int numberTerritories = 18;
+    public static final int numberAgents = 6;
+    public static final int numAgentsColab = 2;
+    public static final int numSmartAgents = 3;
+    public static final int numRandomAgents = numberAgents - numSmartAgents;
 
     private static final long serialVersionUID = 1L;
     private ArrayList<game.Territory> territories;
     private ArrayList<AgentController> agents;
 
     protected void setup() {
-        int numberTerritories = 18;
-        int numberAgents = 6;
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
         ContainerController cc = getContainerController();
 
         // Creating territories and agents
+        int numSmart = 0;
         for (int j=0; j < numberAgents; j++){
             ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
             Object[] args = new Object[3];
@@ -55,37 +58,22 @@ public class Map extends Agent {
             // Creating agent to get the territories created above
             System.out.println("Creating agent " + Integer.toString(j));
             args[0] = agentsTerritories;
-            args[1] = new float[]{-1,0,0,0,0,0,0};
-            args[2] = numberAgents;
-            try {
-                AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
-                this.agents.add(ac);
-                ac.start();
-            } catch (StaleProxyException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            j++;
-            agentsTerritories = new ArrayList<game.Territory>();
-            args = new Object[3];
-            // Creating territories
-            for (int i = 0; i < numberTerritories/numberAgents; i++) {
-                System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
-                game.Territory newTer = new game.Territory();
-                this.territories.add(newTer); // Adding territory to map
-                agentsTerritories.add(newTer); // Adding territory to agent
-                System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
-            }
 
-            // Creating agent to get the territories created above
-            System.out.println("Creating agent " + Integer.toString(j));
-            args[0] = agentsTerritories;
-            args[1] = new float[]{-1,0,0,1,0,0,1};
+            if (j < numAgentsColab)
+                args[1] = new float[]{-1,0,0,0,0,0,0};
+            else
+                args[1] = new float[]{-1,0,0,1,0,0,1};
             args[2] = numberAgents;
+
             try {
-                AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
+                AgentController ac;
+                if (j < numRandomAgents)
+                    ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
+                else
+                    ac = cc.createNewAgent("S"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
                 this.agents.add(ac);
                 ac.start();
+                numSmart++;
             } catch (StaleProxyException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
