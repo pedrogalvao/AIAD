@@ -22,7 +22,8 @@ public class Map extends Agent {
     // Global variables
     public static final long freezeTime = 1000;
     public static final String delimiterChar = " ";
-    public static final String INFORM = "I";
+    public static final String INFORM = "W";
+    public static final String INVALID_MOVE = "I";
 
 
 
@@ -31,18 +32,16 @@ public class Map extends Agent {
     private ArrayList<AgentController> agents;
 
     protected void setup() {
-        int numberTerritories = 6;
-        int numberAgents = 3;
+        int numberTerritories = 18;
+        int numberAgents = 6;
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
-
-        System.out.println("Map mapAID " + this.getAID());
         ContainerController cc = getContainerController();
 
         // Creating territories and agents
         for (int j=0; j < numberAgents; j++){
             ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
-            Object[] args = new Object[2];
+            Object[] args = new Object[3];
 
             // Creating territories
             for (int i = 0; i < numberTerritories/numberAgents; i++) {
@@ -56,7 +55,33 @@ public class Map extends Agent {
             // Creating agent to get the territories created above
             System.out.println("Creating agent " + Integer.toString(j));
             args[0] = agentsTerritories;
-            args[1] = new float[]{0,1,1,0,0,0,0};
+            args[1] = new float[]{-1,0,0,0,0,0,0};
+            args[2] = numberAgents;
+            try {
+                AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
+                this.agents.add(ac);
+                ac.start();
+            } catch (StaleProxyException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            j++;
+            agentsTerritories = new ArrayList<game.Territory>();
+            args = new Object[3];
+            // Creating territories
+            for (int i = 0; i < numberTerritories/numberAgents; i++) {
+                System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
+                game.Territory newTer = new game.Territory();
+                this.territories.add(newTer); // Adding territory to map
+                agentsTerritories.add(newTer); // Adding territory to agent
+                System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
+            }
+
+            // Creating agent to get the territories created above
+            System.out.println("Creating agent " + Integer.toString(j));
+            args[0] = agentsTerritories;
+            args[1] = new float[]{-1,0,0,1,0,0,1};
+            args[2] = numberAgents;
             try {
                 AgentController ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
                 this.agents.add(ac);
@@ -71,7 +96,7 @@ public class Map extends Agent {
         // Adding frontiers
         for (game.Territory T : this.territories) {
             Random random = new Random();
-            int front = random.nextInt(3) + 2;
+            int front = random.nextInt(3) + 4;
             for (int i = 0; i < front; i++) {
                 Random random2 = new Random();
                 int k = random2.nextInt(this.territories.size());
@@ -104,8 +129,7 @@ public class Map extends Agent {
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
         // Print attacking informations
         // From territory A with x troops to territory B with y troops.
-        //System.out.println("Attack from Territory " + Integer.toString(T1.terID) + " (belongs to) " + T1.player.getName() + " with " + Integer.toString(n) + " troops, to Territory " + Integer.toString(T2.terID) + " with " + Integer.toString(T2.troops) + " troops");
-
+        System.out.println("Attack from territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
         // If number of troops is higher than territory amount, send the maximum
         // TODO: Change that once agents are smarter. They might want to re-evaluate
         if (n >= T1.getTroops()) {
@@ -228,14 +252,16 @@ public class Map extends Agent {
         public static final long serialVersionUID = 1L;
         public final game.Map map;
         public final long delay;
-
+        public int rounds;
         public MapBehaviour(game.Map map, long msecs){
             this.map = map;
             this.delay = msecs;
+            this.rounds = 0;
         }
 
         public void action() {
             block(this.delay);
+            rounds++;
 
 
             // If not, add troops and inform game status
@@ -255,6 +281,26 @@ public class Map extends Agent {
                 System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
                 takeDown();
                 return;
+            }
+            if (rounds>50) {
+                int[] playersTerritories = new int[agents.size()];
+                for (int i = 0; i<agents.size(); i++){
+                    playersTerritories[i] = 0;
+                }
+                for (game.Territory T : territories){
+                    String name = T.getPlayer().getLocalName();
+                    int agentIndex = Integer.parseInt(name.substring(1));
+                    playersTerritories[agentIndex] += 1;
+                }
+                int max=0, winner=0;
+                for (int i = 0; i < playersTerritories.length; i++){
+                    if (playersTerritories[i] > max){
+                        winner = i;
+                        max = playersTerritories[i];
+                    }
+                }
+                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.");
+                takeDown();
             }
 
         }
@@ -283,7 +329,6 @@ public class Map extends Agent {
         public void processMessage(ACLMessage msg) {
             // Process messages
             String[] content = msg.getContent().split(map.delimiterChar);
-            //System.out.println(msg.getContent());
             AID msgSender = msg.getSender();
 
             if (content[0].equals("A") || content[0].equals("M")) {
@@ -317,16 +362,35 @@ public class Map extends Agent {
 
                 // Validate number of troops
                 if (n >= T1.getTroops()) {
-                    System.out.println("Invalid. Attacking with more troops than the territory currently have");
+                    System.out.println(msgSender.getLocalName()+" Invalid. Attacking with more troops than the territory currently have. \nFrom territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
                     ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                     msg2.addReceiver(msgSender);
-                    msg2.setContent("I"); // I for Invalid
+                    msg2.setContent(map.INVALID_MOVE);
                     send(msg);
                     return;
                 }
                 if (content[0].equals("A")) attackResults(T1, T2, n);
                 else if (content[0].equals("M")) moveTroops(T1, T2, n);
                 return;
+            }
+            else if (content[0].equals(game.WarAgent.REQUEST_INFO)){
+                ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
+                msg2.addReceiver(msgSender);
+                String answer = map.INFORM;
+                int[] playersTerritories = new int[agents.size()];
+                for (int i = 0; i<agents.size(); i++){
+                    playersTerritories[i] = 0;
+                }
+                for (game.Territory T : territories){
+                    String name = T.getPlayer().getLocalName();
+                    int agentIndex = Integer.parseInt(name.substring(1));
+                    playersTerritories[agentIndex] += 1;
+                }
+                for (int i = 0; i<playersTerritories.length; i++){
+                    answer += map.delimiterChar+Integer.toString(playersTerritories[i]);
+                }
+                msg2.setContent(answer);
+                send(msg2);
             }
         }
 

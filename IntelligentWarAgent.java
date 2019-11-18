@@ -1,5 +1,6 @@
 package game;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -16,14 +17,13 @@ public class IntelligentWarAgent extends game.WarAgent {
     protected float[] parameters;
     protected ArrayList<AID> players;
     protected int[] playersTerritories;
+    protected int numberOfTerritories;
 
     public void setup() {
         this.agentName = getAID().getName();
-        System.out.println("Agent " + this.agentName + " setup");
-        this.mapAID = new AID("map0", AID.ISLOCALNAME);
-        System.out.println("mapId " + this.mapAID + " setup");
-
         Object[] args = getArguments();
+        int numberOfPlayers = (int)args[2];
+        this.mapAID = new AID("map0", AID.ISLOCALNAME);
 
         this.territories = (ArrayList<game.Territory>) args[0];
         for (game.Territory T : this.territories) {
@@ -49,32 +49,17 @@ public class IntelligentWarAgent extends game.WarAgent {
         Behaviour listeningBehaviour = new IntelligentWarListener(this);
         behaviours.add(listeningBehaviour);
         addBehaviour(listeningBehaviour);
-        this.parameters = new float[]{0};
+        players = new ArrayList<AID>(0);
+        for (int i = 0;  i < numberOfPlayers; i++){
+            players.add(new AID("A"+Integer.toString(i), AID.ISLOCALNAME));
+        }
+        this.playersTerritories = new int[numberOfPlayers];
+        this.numberOfTerritories = numberOfPlayers*this.territories.size();
         this.allies = new ArrayList<AID>(0);
-        System.out.println("Agent " + this.agentName + " setup");
         this.parameters = (float[])args[1];
         addBehaviour(new IntelligentWarBehaviour());
 
-        // System.out.println("setup is done");
-    }
-
-    public void addTerritory(game.Territory T) {
-        T.setPlayer(this.getAID());
-        this.territories.add(T);
-    }
-
-    public void removeTerritory(game.Territory T) {
-        this.territories.remove(T);
-    }
-
-    public ArrayList<game.Territory> getTerritories() {
-        return territories;
-    }
-
-    public String getAgentName() { return this.agentName; }
-
-    public void takeDown(){
-        System.out.println("Agent " + this.getName() + " has died (out of territories");
+        System.out.println("Agent " + this.agentName + " setup is done");
     }
 
     class IntelligentWarBehaviour extends WarBehaviour {
@@ -84,9 +69,13 @@ public class IntelligentWarAgent extends game.WarAgent {
         public static final long serialVersionUID = 1L;
 
         public void action() {
+            try {
+                Thread.sleep(game.WarAgent.freezeTime*10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (territories.size() > 0) this.chooseAttack();
             else takeDown();
-            //this.communicate();
         }
 
         private void chooseAttack(){
@@ -96,34 +85,61 @@ public class IntelligentWarAgent extends game.WarAgent {
             for (game.Territory T1 : territories) {
                 for (game.Territory T2 : T1.getFrontiers()) {
                     if (T1.getPlayer().getLocalName().equals(T2.getPlayer().getLocalName())) continue;
-                    dif = T1.getTroops() - T2.getTroops();
-                    if (dif > maxdif) {
-                        maxdif = dif;
-                        src = T1;
-                        dest = T2;
+                    Boolean notInAllies = true;
+                    for (AID A : allies){
+                        if (A.getLocalName().equals(T2.getPlayer().getLocalName())) {
+                            notInAllies = false;
+                            break;
+                        }
+                    }
+                    if (notInAllies){
+                        dif = T1.getTroops() - T2.getTroops();
+                        if (dif > maxdif) {
+                            maxdif = dif;
+                            src = T1;
+                            dest = T2;
+                        }
                     }
                 }
             }
             if (maxdif - parameters[0] > 0) attackMessage(src, dest, src.getTroops()-1);
+
         }
 
     }
     class IntelligentWarListener extends Behaviour {
 
-        private game.WarAgent player;
+        private game.IntelligentWarAgent player;
 
-        public IntelligentWarListener (game.WarAgent player){
+        public IntelligentWarListener (game.IntelligentWarAgent player){
             this.player = player;
         }
 
         public void action(){
+
+            /*String aa = "";
+            for (AID A:player.allies){
+                aa+=A.getLocalName()+", ";
+            }
+            System.out.println("Agent "+ player.getLocalName() +" allies: "+aa);*/
+            try {
+                Thread.sleep(game.WarAgent.freezeTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            requestInformation();
             ACLMessage msg = this.player.receive();
             processMessage(msg);
+            chooseAlliances();
         }
-        public float allianceValue(AID P){
-            int t = playersTerritories[players.indexOf(P)];
-            float v = parameters[1] * t * t + parameters[2] * t + parameters[3];
-            return v;
+        public Boolean allianceValue(AID P){
+            int index = Integer.parseInt(P.getLocalName().substring(1));
+            float t1 = (float)playersTerritories[index]/(float)this.player.numberOfTerritories;
+            float t2 = (float)this.player.territories.size()/(float)this.player.numberOfTerritories;
+            float v1 = parameters[1] * t1 * t1 + parameters[2] * t1 + parameters[3];
+            float v2 = parameters[4] * t2 * t2 + parameters[5] * t2 + parameters[6];
+            if (v1 > t2 && v2 > t1) return true;
+            else return false;
         }
 
         public void requestInformation(){
@@ -134,24 +150,53 @@ public class IntelligentWarAgent extends game.WarAgent {
         }
 
         public void chooseAlliances() {
-            float[] values = new float[players.size()];
             for (AID P : players) {
+                if (P.getLocalName().equals(this.player.getLocalName())) continue;
                 int i = players.indexOf(P);
-                values[i] = allianceValue(P);
-                if (values[i] > 0 && !allies.contains(P)) {
+                Boolean value = allianceValue(P);
+
+                Boolean inAllies = false;
+                for (AID A : allies){
+                    if (A.getLocalName().equals(P.getLocalName())) {
+                        inAllies = true;
+                        break;
+                    }
+                }
+
+                if (value && !inAllies) {
                     proposeAlliance(P);
                 }
-                else if (values[i] <= 0 && allies.contains(P)) {
+                else if (value && inAllies) {
                     breakAlliance(P);
                 }
             }
         }
-        public Boolean decideAlliance(AID P){
-            if (allianceValue(P)>0) return true;
-            else return false;
+        public void decideAlliance(AID P){
+            if (P.getLocalName().equals(this.player.getLocalName())) return;
+            else if (allianceValue(P)) {
+                for (AID A : allies){
+                    if (A.getLocalName().equals(P.getLocalName())) {
+                        return;
+                    }
+                }
+                this.player.allies.add(P);
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.addReceiver(P);
+                msg.setContent(game.WarAgent.ACCEPT_ALLIANCE);
+                send(msg);
+                return;
+            }
+            else {
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.addReceiver(P);
+                msg.setContent(game.WarAgent.REJECT_ALLIANCE);
+                send(msg);
+                return;
+            }
         }
 
         public void breakAlliance(AID P){
+            allies.remove(P);
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(P);
             msg.setContent(game.WarAgent.BREAK_ALLIANCE);
@@ -169,8 +214,6 @@ public class IntelligentWarAgent extends game.WarAgent {
             if (msg == null)
                 return;
 
-            //System.out.println(msg.getContent());
-
             // Get sender and send msg to the right "inbox"
             AID msgSender = msg.getSender();
 
@@ -181,16 +224,21 @@ public class IntelligentWarAgent extends game.WarAgent {
             else {
                 String[] content = msg.getContent().split(game.WarAgent.delimiterChar);
                 if (content[0].equals(game.WarAgent.PROPOSE_ALLIANCE)) {
-                    decideAlliance(msg.getSender());
+                    decideAlliance(msgSender);
                 }
                 else if (content[0].equals(game.WarAgent.ACCEPT_ALLIANCE)){
-                    allies.add(msg.getSender());
+                    for (AID A : allies){
+                        if (A.getLocalName().equals(msgSender.getLocalName())) {
+                            return;
+                        }
+                    }
+                    allies.add(msgSender);
                 }
                 else if (content[0].equals(game.WarAgent.REJECT_ALLIANCE)){
-                    allies.add(msg.getSender());
+                    allies.remove(msgSender);
                 }
                 else if (content[0].equals(game.WarAgent.BREAK_ALLIANCE)){
-                    allies.remove(msg.getSender());
+                    allies.remove(msgSender);
                 }
 
             }
@@ -205,15 +253,12 @@ public class IntelligentWarAgent extends game.WarAgent {
              * How many troops there are now in the territory
              *
              */
-
             String[] content = msg.getContent().split(game.Map.delimiterChar);
 
             // Invalid movement
-            if (content[0].equals("I"))
+            if (content[0].equals(game.Map.INVALID_MOVE))
                 return;
-
-            // Lost territory
-            if (content[0].equals("L")){
+            else if (content[0].equals("L")){// Lost territory
                 int terID = Integer.parseInt(content[1]);
                 game.Territory ter = null;
 
@@ -226,11 +271,13 @@ public class IntelligentWarAgent extends game.WarAgent {
 
                 if (ter != null){
                     removeTerritory(ter);
-                } else{
-                    System.out.println("Removing err. Territory not found");
                 }
-                System.out.println("Removed territory");
                 return;
+            }
+            else if (content[0].equals(game.Map.INFORM)){
+                for (int i = 1; i < playersTerritories.length + 1; i++){
+                    playersTerritories[i-1] = Integer.parseInt(content[i]);
+                }
             }
 
             // Conquered territory
@@ -242,7 +289,7 @@ public class IntelligentWarAgent extends game.WarAgent {
 
                 System.out.println("Conquered territory");
 
-                for (Territory t : territories){
+                for (game.Territory t : territories){
                     if (t.getId() == origID){
                         ter = t;
                         break;
@@ -250,7 +297,7 @@ public class IntelligentWarAgent extends game.WarAgent {
                 }
 
                 if (ter != null){
-                    for (Territory t : ter.frontiers){
+                    for (game.Territory t : ter.frontiers){
                         if (t.getId() == destID){
                             tDest = t;
                             break;
