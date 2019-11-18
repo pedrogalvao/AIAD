@@ -12,18 +12,26 @@ public class WarAgent extends Agent {
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
-    private ArrayList<Territory> territories;
-    private String agentName;
-    private ArrayList<Behaviour> behaviours;
-    private AID mapAID;
+    public static final int freezeTime = 50;
+    public static final String delimiterChar = " ";
+    public static final String BREAK_ALLIANCE = "B";
+    public static final String PROPOSE_ALLIANCE = "P";
+    public static final String ACCEPT_ALLIANCE = "Y";
+    public static final String REJECT_ALLIANCE = "N";
+    public static final String REQUEST_INFO = "R";
+    public static final String ATTACK = "A";
+    public static final String MOVE = "M";
+
+    protected static final long serialVersionUID = 1L;
+    protected ArrayList<game.Territory> territories;
+    protected String agentName;
+    protected ArrayList<Behaviour> behaviours;
+    protected AID mapAID;
 
     public void setup()  {
         this.agentName = getAID().getName();
         System.out.println("Agent " + this.agentName + " setup");
         this.mapAID = new AID("map0", AID.ISLOCALNAME);
-        System.out.println("mapId " + this.mapAID + " setup");
-
         Object[] args = getArguments();
 
         this.territories = (ArrayList<game.Territory>) args[0];
@@ -68,7 +76,7 @@ public class WarAgent extends Agent {
         return this.agentName;
     }
     public void takeDown() {
-        System.out.println("Agent " + this.getName() + " has died (out of territories");
+        System.out.println("Agent " + this.getName() + " has died");
 
         // Is it necessary since we are deleting below?
         for (Behaviour b : behaviours) {
@@ -166,13 +174,14 @@ public class WarAgent extends Agent {
                 n = 0;
             return n;
         }
-        public void attackMessage(game.Territory T1, Territory T2, int n) {
+        public void attackMessage(game.Territory T1, game.Territory T2, int n) {
+            //System.out.println("attackMessage");
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
             send(msg);
         }
-        public void moveMessage(Territory T1, Territory T2, int n) {
+        public void moveMessage(game.Territory T1, game.Territory T2, int n) {
             ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
             msg.addReceiver(mapAID);
             msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
@@ -183,7 +192,7 @@ public class WarAgent extends Agent {
         }
     }
 
-    class WarListener extends Behaviour {
+    protected class WarListener extends Behaviour {
 
         private WarAgent player;
 
@@ -210,7 +219,6 @@ public class WarAgent extends Agent {
                 return;
             }
 
-
         }
 
         public void mapMessage(ACLMessage msg){
@@ -233,7 +241,7 @@ public class WarAgent extends Agent {
                 int terID = Integer.parseInt(content[1]);
                 game.Territory ter = null;
 
-                for (Territory t : territories){
+                for (game.Territory t : territories){
                     if (t.getId() == terID) {
                         ter = t;
                         break;
@@ -258,7 +266,7 @@ public class WarAgent extends Agent {
 
                 System.out.println("Conquered territory");
 
-                for (Territory t : territories){
+                for (game.Territory t : territories){
                     if (t.getId() == origID){
                         ter = t;
                         break;
@@ -266,7 +274,7 @@ public class WarAgent extends Agent {
                 }
 
                 if (ter != null){
-                    for (Territory t : ter.frontiers){
+                    for (game.Territory t : ter.frontiers){
                         if (t.getId() == destID){
                             tDest = t;
                             break;
