@@ -20,7 +20,7 @@ public class Map extends Agent {
      *
      */
     // Global variables
-    public static final long freezeTime = 1000;
+    public static final long freezeTime = 500;
     public static final String delimiterChar = " ";
     public static final String INFORM = "W";
     public static final String INVALID_MOVE = "I";
@@ -270,7 +270,7 @@ public class Map extends Agent {
                 takeDown();
                 return;
             }
-            if (rounds>50) {
+            if (rounds>5000) {
                 int[] playersTerritories = new int[agents.size()];
                 for (int i = 0; i<agents.size(); i++){
                     playersTerritories[i] = 0;

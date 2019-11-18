@@ -12,7 +12,6 @@ public class WarAgent extends Agent {
     /**
      *
      */
-    public static final int freezeTime = 50;
     public static final String delimiterChar = " ";
     public static final String BREAK_ALLIANCE = "B";
     public static final String PROPOSE_ALLIANCE = "P";
@@ -91,7 +90,7 @@ public class WarAgent extends Agent {
          *
          */
         public static final long serialVersionUID = 1L;
-        private static final long delay = 1000; // Delay so map can process messages
+        public static final long delay = 1000; // Delay so map can process messages
 
         public void action() {
 

@@ -68,13 +68,10 @@ public class IntelligentWarAgent extends game.WarAgent {
         public static final long serialVersionUID = 1L;
 
         public void action() {
-            try {
-                Thread.sleep(game.WarAgent.freezeTime*10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             if (territories.size() > 0) this.chooseAttack();
             else takeDown();
+
+            block(WarBehaviour.delay);
         }
 
         private void chooseAttack(){
@@ -121,11 +118,6 @@ public class IntelligentWarAgent extends game.WarAgent {
                 aa+=A.getLocalName()+", ";
             }
             System.out.println("Agent "+ player.getLocalName() +" allies: "+aa);*/
-            try {
-                Thread.sleep(game.WarAgent.freezeTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             requestInformation();
             ACLMessage msg = this.player.receive();
             processMessage(msg);
