@@ -30,6 +30,7 @@ public class WarAgent extends Agent {
     public void setup()  {
         this.agentName = getAID().getName();
         System.out.println("Agent " + this.agentName + " setup");
+        // TODO: This next line might not work if we are generating another maps
         this.mapAID = new AID("map0", AID.ISLOCALNAME);
         Object[] args = getArguments();
 
@@ -234,6 +235,12 @@ public class WarAgent extends Agent {
             // Invalid movement
             if (content[0].equals("I"))
                 return;
+
+            // If received message for game over, takedown
+            if (content[0].equals("O")){
+                takeDown();
+                return;
+            }
 
             // Lost territory
             if (content[0].equals("L")){

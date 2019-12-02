@@ -11,19 +11,13 @@ Agents have the following behaviours:
 
 # TODOs
 
-## Implement more complex strategies
-
-### Attack strategies
-
-- Agents gets the difference of troops in his territory vs frontier territories and attacks the one with highest difference
-- Agents attribute parameters to the previous value in order to attack the frontiers or not 
-
-
-
 # Feedback prof
 
-- Aumentar a complexidade da negociação
-- Fornecer argumentos de execução como parâmetro
+- Fornecer argumentos de execução como parâmetro - Guilherme
+  - Começar novo jogo (criar novo mapa após o jogo anterior acabar)
+  - Passar os parâmetros
+- Aumentar a complexidade da negociação 
+- Escrever CSV com dados gerados pelas execuções
 
 
 

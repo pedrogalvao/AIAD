@@ -20,10 +20,14 @@ public class Map extends Agent {
      *
      */
     // Global variables
-    public static final long freezeTime = 500;
     public static final String delimiterChar = " ";
     public static final String INFORM = "W";
     public static final String INVALID_MOVE = "I";
+
+    public static final long freezeTime = 500;
+    public static final long maxRounds = 5;
+
+    public static long mapCount = 0;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
@@ -113,6 +117,7 @@ public class Map extends Agent {
         }
         addBehaviour(new MapListenerBehaviour(this));
         addBehaviour(new MapBehaviour(this, 1000));
+        mapCount++;
     }
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
         // Print attacking informations
@@ -181,6 +186,22 @@ public class Map extends Agent {
         return;
     }
 
+    public void informAgent(AID player, String status){
+        /**
+         * Informs the player about changes in the territory according to the following protocol:
+         * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid)
+         * Which territory (terID)
+         * How many troops there are now in the territory
+         *
+         */
+
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(player);
+
+        String msgCont = status;
+        msg.setContent(msgCont);
+        send(msg);
+    }
     public void informAgent(AID player, String status, int terID, int numTroops){
         /**
          * Informs the player about changes in the territory according to the following protocol:
@@ -200,7 +221,7 @@ public class Map extends Agent {
     public void informAgent(AID player, String status, int terIDOrig, int terIDDest, int numTroops){
         /**
          * Informs the player about changes in the territory according to the following protocol:
-         * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid)
+         * Lost ("L"), Conquered ("C") or No status change ("N"). Territory (just "I" if movement was invalid). "O" if game is Over
          * Which territory (terID)
          * Msg for conquered territory also includes orign of attack, so we can add the territory from inside the player via frontiers
          * How many troops there are now in the territory
@@ -216,19 +237,22 @@ public class Map extends Agent {
         send(msg);
     }
     public void takeDown(){
-        this.territories = null;
 
-        for (AgentController ac : this.agents){
-            if (ac != null) {
-                try {
-                    ac.kill();
-                } catch (StaleProxyException e) {
-                    e.printStackTrace();
-                }
+        // Kill any agent that is still alive (sends a message to the agent so it can destroy itself)
+        AID agent = null;
+        if (this.territories != null) {
+            for (game.Territory t : this.territories) {
+                agent = t.getPlayer();
+                informAgent(agent, "O");
             }
         }
 
+        // Clear memory for this map
+        this.territories = null;
         this.agents = null;
+
+        // Generate next map and delete this one
+        System.out.println("Map erased");
         doDelete();
     }
 
@@ -267,10 +291,9 @@ public class Map extends Agent {
 
             if ( done ){
                 System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
-                takeDown();
-                return;
             }
-            if (rounds>5000) {
+
+            if (rounds > Map.maxRounds) {
                 int[] playersTerritories = new int[agents.size()];
                 for (int i = 0; i<agents.size(); i++){
                     playersTerritories[i] = 0;
