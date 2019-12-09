@@ -28,6 +28,7 @@ public class Map extends Agent {
     public static final long maxRounds = 5;
 
     public static long mapCount = 0;
+    public static final long maxMaps = 2;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
@@ -40,6 +41,12 @@ public class Map extends Agent {
     private ArrayList<AgentController> agents;
 
     protected void setup() {
+        // Check if there is another run
+        if (mapCount >= maxMaps){
+            doDelete();
+            return;
+        }
+
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
         ContainerController cc = getContainerController();
@@ -253,6 +260,20 @@ public class Map extends Agent {
 
         // Generate next map and delete this one
         System.out.println("Map erased");
+        if (mapCount < maxMaps -1) {
+            ContainerController cc = getContainerController();
+            AgentController ac = null;
+            try {
+                ac = cc.createNewAgent("map" + Long.toString(mapCount+1), "game.Map", null);
+            } catch (StaleProxyException e) {
+                e.printStackTrace();
+            }
+            try {
+                ac.start();
+            } catch (StaleProxyException e) {
+                e.printStackTrace();
+            }
+        }
         doDelete();
     }
 
