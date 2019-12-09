@@ -28,16 +28,14 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 500;
-
-    public static long mapCount = 0;
-    public static final long maxMaps = 2;
+    public static final long maxRounds = 5;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
     public static final int numAgentsColab = 2;
     public static final int numSmartAgents = 3;
     public static final int numRandomAgents = numberAgents - numSmartAgents;
+    public static long numAgentsCreated = 0;
 
     float[][] parameters = new float[6][7];
     String DataToTxtFile;
@@ -46,13 +44,9 @@ public class Map extends Agent {
     private ArrayList<game.Territory> territories;
     private ArrayList<AgentController> agents;
 
-    protected void setup() {
-        // Check if there is another run
-        if (mapCount >= maxMaps){
-            doDelete();
-            return;
-        }
+    public static AID generator = new AID("generator", AID.ISLOCALNAME);
 
+    protected void setup() {
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
         ContainerController cc = getContainerController();
@@ -66,15 +60,15 @@ public class Map extends Agent {
 
             // Creating territories
             for (int i = 0; i < numberTerritories/numberAgents; i++) {
-                System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
+                //System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
                 game.Territory newTer = new game.Territory();
                 this.territories.add(newTer); // Adding territory to map
                 agentsTerritories.add(newTer); // Adding territory to agent
-                System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
+                //System.out.println("Territory "+Integer.toString(newTer.terID)+" belongs to agent "+Integer.toString(j));
             }
 
             // Creating agent to get the territories created above
-            System.out.println("Creating agent " + Integer.toString(j));
+            //System.out.println("Creating agent " + Integer.toString(j));
             args[0] = agentsTerritories;
 
             if (j < numAgentsColab)
@@ -88,12 +82,11 @@ public class Map extends Agent {
             try {
                 AgentController ac;
                 String agentName = "";
-                if (j < numRandomAgents){
-                    ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
-                }
-                else {
-                    ac = cc.createNewAgent("S"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
-                }
+                if (j < numRandomAgents)
+                    ac = cc.createNewAgent("A"+Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
+                else
+                    ac = cc.createNewAgent("S"+Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
+                numAgentsCreated++;
                 this.agents.add(ac);
                 ac.start();
                 numSmart++;
@@ -102,7 +95,7 @@ public class Map extends Agent {
                 e.printStackTrace();
             }
         }
-        System.out.println("number of agents created: " + Integer.toString(this.agents.size()));
+        //System.out.println("number of agents created: " + Integer.toString(this.agents.size()));
 
         // Adding frontiers
         for (game.Territory T : this.territories) {
@@ -125,7 +118,7 @@ public class Map extends Agent {
 
                 T.addFrontier(this.territories.get(k));
                 this.territories.get(k).addFrontier(T); // bidirectional frontiers
-                System.out.println("frontier " + Integer.toString(T.terID)+ " " + Integer.toString(this.territories.get(k).terID) );
+                //System.out.println("frontier " + Integer.toString(T.terID)+ " " + Integer.toString(this.territories.get(k).terID) );
             }
         }
 
@@ -134,9 +127,9 @@ public class Map extends Agent {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        //ArrayList<Behaviour> behaviours
         addBehaviour(new MapListenerBehaviour(this));
         addBehaviour(new MapBehaviour(this, 1000));
-        mapCount++;
     }
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
         // Print attacking informations
@@ -256,6 +249,10 @@ public class Map extends Agent {
         send(msg);
     }
     public void takeDown(){
+        // Remove map behaviours (documentation says that this is not necessary,
+        // however the behaviour was still running after takeDown was over,
+        // causing a NullPointerException.
+        //removeBehaviour();
 
         // Kill any agent that is still alive (sends a message to the agent so it can destroy itself)
         AID agent = null;
@@ -266,27 +263,11 @@ public class Map extends Agent {
             }
         }
 
-        // Clear memory for this map
-        this.territories = null;
-        this.agents = null;
+        // Inform map generator to generate Next map.
+        informAgent(generator, "N");
 
-        // Generate next map and delete this one
         System.out.println("Map erased");
-        if (mapCount < maxMaps -1) {
-            ContainerController cc = getContainerController();
-            AgentController ac = null;
-            try {
-                ac = cc.createNewAgent("map" + Long.toString(mapCount+1), "game.Map", null);
-            } catch (StaleProxyException e) {
-                e.printStackTrace();
-            }
-            try {
-                ac.start();
-            } catch (StaleProxyException e) {
-                e.printStackTrace();
-            }
-        }
-        doDelete();
+        //doDelete();
     }
 
 
@@ -327,13 +308,16 @@ public class Map extends Agent {
             }
 
             if (rounds > Map.maxRounds) {
+                // Counting number of territories each player has
                 int[] playersTerritories = new int[agents.size()];
+                // Zeroying array
                 for (int i = 0; i<agents.size(); i++){
                     playersTerritories[i] = 0;
                 }
+
                 for (game.Territory T : territories){
                     String name = T.getPlayer().getLocalName();
-                    int agentIndex = Integer.parseInt(name.substring(1));
+                    int agentIndex = Integer.parseInt(name.substring(1)) % numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 int max=0, winner=0;
@@ -374,7 +358,7 @@ public class Map extends Agent {
                     }
                 }
                 System.out.println("\nDATA:");
-                System.out.println(this.map.DataToTxtFile);
+                //System.out.println(this.map.DataToTxtFile);
                 System.out.println("\nFIM");
 
                 takeDown();
@@ -460,7 +444,7 @@ public class Map extends Agent {
                 }
                 for (game.Territory T : territories){
                     String name = T.getPlayer().getLocalName();
-                    int agentIndex = Integer.parseInt(name.substring(1));
+                    int agentIndex = Integer.parseInt(name.substring(1)) % numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 for (int i = 0; i<playersTerritories.length; i++){

@@ -30,7 +30,7 @@ public class WarAgent extends Agent {
     public void setup()  {
         this.agentName = getAID().getName();
         System.out.println("Agent " + this.agentName + " setup");
-        this.mapAID = new AID("map0", AID.ISLOCALNAME);
+        this.mapAID = new AID("map" + Long.toString(game.MapGenerators.mapCount), AID.ISLOCALNAME);
         Object[] args = getArguments();
 
         this.territories = (ArrayList<game.Territory>) args[0];

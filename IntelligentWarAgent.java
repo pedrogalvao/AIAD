@@ -22,7 +22,7 @@ public class IntelligentWarAgent extends game.WarAgent {
         this.agentName = getAID().getName();
         Object[] args = getArguments();
         int numberOfPlayers = (int)args[2];
-        this.mapAID = new AID("map0", AID.ISLOCALNAME);
+        this.mapAID = new AID("map"+ Long.toString(game.MapGenerators.mapCount), AID.ISLOCALNAME);
 
         this.territories = (ArrayList<game.Territory>) args[0];
         for (game.Territory T : this.territories) {
@@ -124,7 +124,7 @@ public class IntelligentWarAgent extends game.WarAgent {
             chooseAlliances();
         }
         public Boolean allianceValue(AID P){
-            int index = Integer.parseInt(P.getLocalName().substring(1));
+            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.Map.numberAgents;
             float t1 = (float)playersTerritories[index]/(float)this.player.numberOfTerritories;
             float t2 = (float)this.player.territories.size()/(float)this.player.numberOfTerritories;
             float v1 = parameters[1] * t1 * t1 + parameters[2] * t1 + parameters[3];
