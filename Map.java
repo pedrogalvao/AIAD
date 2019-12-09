@@ -28,7 +28,7 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 5;
+    public static final long maxRounds = 500;
 
     public static long mapCount = 0;
 
@@ -38,6 +38,7 @@ public class Map extends Agent {
     public static final int numSmartAgents = 3;
     public static final int numRandomAgents = numberAgents - numSmartAgents;
 
+    float[][] parameters = new float[6][7];
     String DataToTxtFile;
 
     private static final long serialVersionUID = 1L;
@@ -75,6 +76,8 @@ public class Map extends Agent {
                 args[1] = new float[]{-1,0,0,1,0,0,1};
             args[2] = numberAgents;
 
+            parameters[j] = (float[]) args[1];
+
             try {
                 AgentController ac;
                 String agentName = "";
@@ -86,12 +89,6 @@ public class Map extends Agent {
                     agentName = "S"+Integer.toString(j);
                     ac = cc.createNewAgent(agentName, "game.IntelligentWarAgent", args=args);
                 }
-                DataToTxtFile += agentName;
-                for (int i=0; i< ((float[])(args[1])).length; i++){
-                    DataToTxtFile += ",";
-                    DataToTxtFile += Float.toString(((float[])(args[1]))[i]);
-                }
-                DataToTxtFile += "\n";
                 this.agents.add(ac);
                 ac.start();
                 numSmart++;
@@ -322,16 +319,18 @@ public class Map extends Agent {
                 }
                 int max=0, winner=0;
                 for (int i = 0; i < playersTerritories.length; i++){
+                    for (int j = 0; j < 7; j++)
+                        DataToTxtFile += Float.toString(parameters[i][j])+",";
                     DataToTxtFile += Integer.toString(playersTerritories[i]);
-                    if (i < playersTerritories.length-1)  DataToTxtFile += ",";
+                    if (i < playersTerritories.length-1)  DataToTxtFile += "\n";
                     if (playersTerritories[i] > max){
                         winner = i;
                         max = playersTerritories[i];
                     }
                 }
-                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.");
+                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.\n");
 
-                File file = new File("WarData.txt");
+                File file = new File("WarData.csv");
 
                 // creates the file
                 try{
@@ -345,13 +344,11 @@ public class Map extends Agent {
                     fr = new FileWriter(file);
                     fr.write(this.map.DataToTxtFile);
                 } catch (IOException e) {
-                    System.out.println("\nERROR:");
                     e.printStackTrace();
                 }
                 finally{
                     //close resources
                     try {
-                        System.out.println("\nclosing file:");
                         fr.close();
                     } catch (IOException e) {
                         e.printStackTrace();
