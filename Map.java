@@ -1,5 +1,8 @@
 package game;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import jade.core.AID;
@@ -25,7 +28,7 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 5;
+    public static final long maxRounds = 500;
 
     public static long mapCount = 0;
     public static final long maxMaps = 2;
@@ -35,6 +38,9 @@ public class Map extends Agent {
     public static final int numAgentsColab = 2;
     public static final int numSmartAgents = 3;
     public static final int numRandomAgents = numberAgents - numSmartAgents;
+
+    float[][] parameters = new float[6][7];
+    String DataToTxtFile;
 
     private static final long serialVersionUID = 1L;
     private ArrayList<game.Territory> territories;
@@ -50,6 +56,7 @@ public class Map extends Agent {
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
         ContainerController cc = getContainerController();
+        this.DataToTxtFile = "";
 
         // Creating territories and agents
         int numSmart = 0;
@@ -76,12 +83,19 @@ public class Map extends Agent {
                 args[1] = new float[]{-1,0,0,1,0,0,1};
             args[2] = numberAgents;
 
+            parameters[j] = (float[]) args[1];
+
             try {
                 AgentController ac;
-                if (j < numRandomAgents)
-                    ac = cc.createNewAgent("A"+Integer.toString(j), "game.WarAgent", args=args);
-                else
-                    ac = cc.createNewAgent("S"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
+                String agentName = "";
+                if (j < numRandomAgents){
+                    agentName = "A"+Integer.toString(j);
+                    ac = cc.createNewAgent(agentName, "game.IntelligentWarAgent", args=args);
+                }
+                else {
+                    agentName = "S"+Integer.toString(j);
+                    ac = cc.createNewAgent(agentName, "game.IntelligentWarAgent", args=args);
+                }
                 this.agents.add(ac);
                 ac.start();
                 numSmart++;
@@ -326,12 +340,45 @@ public class Map extends Agent {
                 }
                 int max=0, winner=0;
                 for (int i = 0; i < playersTerritories.length; i++){
+                    for (int j = 0; j < 7; j++)
+                        DataToTxtFile += Float.toString(parameters[i][j])+",";
+                    DataToTxtFile += Integer.toString(playersTerritories[i]);
+                    if (i < playersTerritories.length-1)  DataToTxtFile += "\n";
                     if (playersTerritories[i] > max){
                         winner = i;
                         max = playersTerritories[i];
                     }
                 }
-                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.");
+                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.\n");
+
+                File file = new File("WarData.csv");
+
+                // creates the file
+                try{
+                    file.createNewFile();
+                }
+                catch (IOException e){
+                    e.printStackTrace();
+                }
+                FileWriter fr = null;
+                try {
+                    fr = new FileWriter(file);
+                    fr.write(this.map.DataToTxtFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                finally{
+                    //close resources
+                    try {
+                        fr.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println("\nDATA:");
+                System.out.println(this.map.DataToTxtFile);
+                System.out.println("\nFIM");
+
                 takeDown();
             }
 

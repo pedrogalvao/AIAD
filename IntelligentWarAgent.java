@@ -249,13 +249,6 @@ public class IntelligentWarAgent extends game.WarAgent {
             // Invalid movement
             if (content[0].equals(game.Map.INVALID_MOVE))
                 return;
-
-            // If received message for game over, takedown
-            else if (content[0].equals("O")){
-                takeDown();
-                return;
-            }
-
             else if (content[0].equals("L")){// Lost territory
                 int terID = Integer.parseInt(content[1]);
                 game.Territory ter = null;
