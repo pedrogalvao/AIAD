@@ -235,6 +235,12 @@ public class WarAgent extends Agent {
             if (content[0].equals("I"))
                 return;
 
+            // If received message for game over, takedown
+            if (content[0].equals("O")){
+                takeDown();
+                return;
+            }
+
             // Lost territory
             if (content[0].equals("L")){
                 int terID = Integer.parseInt(content[1]);

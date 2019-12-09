@@ -89,12 +89,10 @@ public class Map extends Agent {
                 AgentController ac;
                 String agentName = "";
                 if (j < numRandomAgents){
-                    agentName = "A"+Integer.toString(j);
-                    ac = cc.createNewAgent(agentName, "game.IntelligentWarAgent", args=args);
+                    ac = cc.createNewAgent("A"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
                 }
                 else {
-                    agentName = "S"+Integer.toString(j);
-                    ac = cc.createNewAgent(agentName, "game.IntelligentWarAgent", args=args);
+                    ac = cc.createNewAgent("S"+Integer.toString(j), "game.IntelligentWarAgent", args=args);
                 }
                 this.agents.add(ac);
                 ac.start();
