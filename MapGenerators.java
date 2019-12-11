@@ -9,7 +9,7 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
 public class MapGenerators extends Agent {
-    public static final long maxMaps = 2;
+    public static final long maxMaps = 30;
     public static long mapCount = 0;
 
     /*
@@ -27,10 +27,12 @@ public class MapGenerators extends Agent {
     }
 
     protected void generateMap(){
+        game.Territory.terCount = 0;
         ContainerController cc = getContainerController();
         AgentController ac = null;
         try {
             ac = cc.createNewAgent("map" + Long.toString(mapCount), "game.Map", null);
+            System.out.println("\nMap "+Long.toString(mapCount));
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }

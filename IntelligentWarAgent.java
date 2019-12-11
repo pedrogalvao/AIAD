@@ -40,7 +40,7 @@ public class IntelligentWarAgent extends game.WarAgent {
         this.behaviours = new ArrayList<Behaviour>();
 
         // Attacking behaviour
-        Behaviour attackingBehaviour = new IntelligentWarBehaviour();
+        Behaviour attackingBehaviour = new IntelligentWarBehaviour(this);
         behaviours.add(attackingBehaviour);
         addBehaviour(attackingBehaviour);
 
@@ -56,7 +56,7 @@ public class IntelligentWarAgent extends game.WarAgent {
         this.numberOfTerritories = numberOfPlayers*this.territories.size();
         this.allies = new ArrayList<AID>(0);
         this.parameters = (float[])args[1];
-        addBehaviour(new IntelligentWarBehaviour());
+//        addBehaviour(new IntelligentWarBehaviour());
 
         System.out.println("Agent " + this.agentName + " setup is done");
     }
@@ -67,11 +67,77 @@ public class IntelligentWarAgent extends game.WarAgent {
          */
         public static final long serialVersionUID = 1L;
 
+        int t = 0;
+        private game.IntelligentWarAgent player;
+
+        public IntelligentWarBehaviour (game.IntelligentWarAgent player){
+            this.player = player;
+        }
+
         public void action() {
+            t++;
             if (territories.size() > 0) this.chooseAttack();
             else takeDown();
-
+            if(t%3==0){
+                requestInformation();
+                chooseAlliances();
+            }
             block(WarBehaviour.delay);
+        }
+
+        public void requestInformation(){
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(mapAID);
+            msg.setContent(game.WarAgent.REQUEST_INFO);
+            send(msg);
+        }
+        public void chooseAlliances() {
+            for (AID P : players) {
+                if (P.getLocalName().equals(this.player.getLocalName())) continue;
+                int i = players.indexOf(P);
+                Boolean value = allianceValue(P);
+
+                Boolean inAllies = false;
+                for (AID A : allies){
+                    if (A.getLocalName().equals(P.getLocalName())) {
+                        inAllies = true;
+                        break;
+                    }
+                }
+
+                if (value && !inAllies) {
+                    proposeAlliance(P);
+                }
+                else if (value && inAllies) {
+                    breakAlliance(P);
+                }
+            }
+        }
+
+        public void breakAlliance(AID P){
+            allies.remove(P);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(P);
+            msg.setContent(game.WarAgent.BREAK_ALLIANCE);
+            send(msg);
+            allies.remove(P);
+        }
+
+        public void proposeAlliance(AID P){
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(P);
+            msg.setContent(game.WarAgent.PROPOSE_ALLIANCE);
+            send(msg);
+        }
+
+        public Boolean allianceValue(AID P){
+            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.Map.numberAgents;
+            float t1 = (float)playersTerritories[index]/(float)this.player.numberOfTerritories;
+            float t2 = (float)this.player.territories.size()/(float)this.player.numberOfTerritories;
+            float v1 = parameters[1] * t1 * t1 + parameters[2] * t1 + parameters[3];
+            float v2 = parameters[4] * t2 * t2 + parameters[5] * t2 + parameters[6];
+            if (v1 > t2 && v2 > t1) return true;
+            else return false;
         }
 
         private void chooseAttack(){
@@ -112,16 +178,13 @@ public class IntelligentWarAgent extends game.WarAgent {
         }
 
         public void action(){
-
             /*String aa = "";
             for (AID A:player.allies){
                 aa+=A.getLocalName()+", ";
             }
             System.out.println("Agent "+ player.getLocalName() +" allies: "+aa);*/
-            requestInformation();
             ACLMessage msg = this.player.receive();
             processMessage(msg);
-            chooseAlliances();
         }
         public Boolean allianceValue(AID P){
             int index = Integer.parseInt(P.getLocalName().substring(1)) % game.Map.numberAgents;
@@ -133,35 +196,6 @@ public class IntelligentWarAgent extends game.WarAgent {
             else return false;
         }
 
-        public void requestInformation(){
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(mapAID);
-            msg.setContent(game.WarAgent.REQUEST_INFO);
-            send(msg);
-        }
-
-        public void chooseAlliances() {
-            for (AID P : players) {
-                if (P.getLocalName().equals(this.player.getLocalName())) continue;
-                int i = players.indexOf(P);
-                Boolean value = allianceValue(P);
-
-                Boolean inAllies = false;
-                for (AID A : allies){
-                    if (A.getLocalName().equals(P.getLocalName())) {
-                        inAllies = true;
-                        break;
-                    }
-                }
-
-                if (value && !inAllies) {
-                    proposeAlliance(P);
-                }
-                else if (value && inAllies) {
-                    breakAlliance(P);
-                }
-            }
-        }
         public void decideAlliance(AID P){
             if (P.getLocalName().equals(this.player.getLocalName())) return;
             else if (allianceValue(P)) {
@@ -186,21 +220,6 @@ public class IntelligentWarAgent extends game.WarAgent {
             }
         }
 
-        public void breakAlliance(AID P){
-            allies.remove(P);
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(P);
-            msg.setContent(game.WarAgent.BREAK_ALLIANCE);
-            send(msg);
-            allies.remove(P);
-        }
-
-        public void proposeAlliance(AID P){
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(P);
-            msg.setContent(game.WarAgent.PROPOSE_ALLIANCE);
-            send(msg);
-        }
         public void processMessage(ACLMessage msg){
             if (msg == null)
                 return;

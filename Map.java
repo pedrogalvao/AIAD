@@ -28,7 +28,7 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 5;
+    public static final long maxRounds = 150;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
@@ -129,7 +129,7 @@ public class Map extends Agent {
         }
         //ArrayList<Behaviour> behaviours
         addBehaviour(new MapListenerBehaviour(this));
-        addBehaviour(new MapBehaviour(this, 1000));
+        addBehaviour(new MapBehaviour(this, 500));
     }
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
         // Print attacking informations
@@ -253,6 +253,31 @@ public class Map extends Agent {
         // however the behaviour was still running after takeDown was over,
         // causing a NullPointerException.
         //removeBehaviour();
+        File file = new File("WarData.csv");
+
+
+        // creates the file
+        try{
+            file.createNewFile();
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        FileWriter fr = null;
+        try {
+            fr = new FileWriter(file, true);
+            fr.write(this.DataToTxtFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally{
+            //close resources
+            try {
+                fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         // Kill any agent that is still alive (sends a message to the agent so it can destroy itself)
         AID agent = null;
@@ -267,7 +292,7 @@ public class Map extends Agent {
         informAgent(generator, "N");
 
         System.out.println("Map erased");
-        //doDelete();
+        doDelete();
     }
 
 
@@ -298,7 +323,7 @@ public class Map extends Agent {
                 T.troops += 2;
                 if (!(T.getPlayer() == null)) {
                     if (!T.getPlayer().getLocalName().equals(P0)) done = false;
-                    System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.getPlayer().getLocalName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
+                    //System.out.println("Territory " + Integer.toString(T.terID) + " belongs to " + T.getPlayer().getLocalName() + " with troops: " + Integer.toString(T.troops) + " troops '+2");
                 }
             }
             // If one player conquered all territories, game is over
@@ -325,7 +350,7 @@ public class Map extends Agent {
                     for (int j = 0; j < 7; j++)
                         DataToTxtFile += Float.toString(parameters[i][j])+",";
                     DataToTxtFile += Integer.toString(playersTerritories[i]);
-                    if (i < playersTerritories.length-1)  DataToTxtFile += "\n";
+                    DataToTxtFile += "\n";
                     if (playersTerritories[i] > max){
                         winner = i;
                         max = playersTerritories[i];
@@ -333,30 +358,7 @@ public class Map extends Agent {
                 }
                 System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.\n");
 
-                File file = new File("WarData.csv");
 
-                // creates the file
-                try{
-                    file.createNewFile();
-                }
-                catch (IOException e){
-                    e.printStackTrace();
-                }
-                FileWriter fr = null;
-                try {
-                    fr = new FileWriter(file);
-                    fr.write(this.map.DataToTxtFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                finally{
-                    //close resources
-                    try {
-                        fr.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
                 System.out.println("\nDATA:");
                 //System.out.println(this.map.DataToTxtFile);
                 System.out.println("\nFIM");
@@ -381,8 +383,9 @@ public class Map extends Agent {
 
         public void action() {
             ACLMessage msg = this.map.receive();
-            //System.out.println(msg);
+
             if (msg != null) {
+                System.out.println(msg.getContent());
                 processMessage(msg);
             }
         }

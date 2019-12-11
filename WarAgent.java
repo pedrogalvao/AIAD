@@ -90,7 +90,7 @@ public class WarAgent extends Agent {
          *
          */
         public static final long serialVersionUID = 1L;
-        public static final long delay = 1000; // Delay so map can process messages
+        public static final long delay = 200; // Delay so map can process messages
 
         public void action() {
 
