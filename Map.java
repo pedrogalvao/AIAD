@@ -35,7 +35,7 @@ public class Map extends Agent {
     public static final int numAgentsColab = 2;
     public static final int numSmartAgents = 3;
     public static final int numRandomAgents = numberAgents - numSmartAgents;
-    public static long numAgentsCreated = 0;
+    public static long numAgentsCreated;
 
     float[][] parameters = new float[6][7];
     String DataToTxtFile;
@@ -44,7 +44,7 @@ public class Map extends Agent {
     private ArrayList<game.Territory> territories;
     private ArrayList<AgentController> agents;
 
-    public static AID generator = new AID("generator", AID.ISLOCALNAME);
+    public static final AID generator = new AID("generator", AID.ISLOCALNAME);
 
     protected void setup() {
         this.territories = new ArrayList<game.Territory>(0);
@@ -83,9 +83,9 @@ public class Map extends Agent {
                 AgentController ac;
                 String agentName = "";
                 if (j < numRandomAgents)
-                    ac = cc.createNewAgent("A"+Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
+                    ac = cc.createNewAgent("M" + this.getLocalName().substring(3) + "A" + Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
                 else
-                    ac = cc.createNewAgent("S"+Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
+                    ac = cc.createNewAgent("M" + this.getLocalName().substring(3) + "S" + Long.toString(numAgentsCreated), "game.IntelligentWarAgent", args=args);
                 numAgentsCreated++;
                 this.agents.add(ac);
                 ac.start();
@@ -134,7 +134,7 @@ public class Map extends Agent {
     public void attackResults(game.Territory T1, game.Territory T2, int n) {
         // Print attacking informations
         // From territory A with x troops to territory B with y troops.
-        System.out.println("Attack from territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
+        // System.out.println("Attack from territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
         // If number of troops is higher than territory amount, send the maximum
         // TODO: Change that once agents are smarter. They might want to re-evaluate
         if (n >= T1.getTroops()) {
@@ -341,8 +341,9 @@ public class Map extends Agent {
                 }
 
                 for (game.Territory T : territories){
-                    String name = T.getPlayer().getLocalName();
-                    int agentIndex = Integer.parseInt(name.substring(1)) % numberAgents;
+                    String a = new String("A|S");
+                    String[] name = T.getPlayer().getLocalName().split(a);
+                    int agentIndex = Integer.parseInt(name[1]) % numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 int max=0, winner=0;
@@ -385,7 +386,7 @@ public class Map extends Agent {
             ACLMessage msg = this.map.receive();
 
             if (msg != null) {
-                System.out.println(msg.getContent());
+                //System.out.println(msg.getContent());
                 processMessage(msg);
             }
         }
@@ -406,7 +407,7 @@ public class Map extends Agent {
                 if (t1id < this.map.territories.size())
                     T1 = territories.get(t1id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
                 else {
-                    System.out.println("Invalid. Territory out of map");
+                    // System.out.println("Invalid. Territory out of map");
                     ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                     msg2.addReceiver(msgSender);
                     msg2.setContent("I"); // I for Invalid
@@ -416,7 +417,7 @@ public class Map extends Agent {
                 if (t2id < this.map.territories.size())
                     T2 = territories.get(t2id); // This line works because of the way territories are created, but the terID is not necessarely the ID on ter list
                 else {
-                    System.out.println("Invalid. Territory out of map");
+                    // System.out.println("Invalid. Territory out of map");
                     ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                     msg2.addReceiver(msgSender);
                     msg2.setContent("I"); // I for Invalid
@@ -426,7 +427,7 @@ public class Map extends Agent {
 
                 // Validate number of troops
                 if (n >= T1.getTroops()) {
-                    System.out.println(msgSender.getLocalName()+" Invalid. Attacking with more troops than the territory currently have. \nFrom territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
+                    // System.out.println(msgSender.getLocalName()+" Invalid. Attacking with more troops than the territory currently have. \nFrom territory "+Integer.toString(T1.getId())+" to territory "+Integer.toString(T2.getId())+" with "+Integer.toString(n));
                     ACLMessage msg2 = new ACLMessage(ACLMessage.INFORM);
                     msg2.addReceiver(msgSender);
                     msg2.setContent(map.INVALID_MOVE);
@@ -446,8 +447,9 @@ public class Map extends Agent {
                     playersTerritories[i] = 0;
                 }
                 for (game.Territory T : territories){
-                    String name = T.getPlayer().getLocalName();
-                    int agentIndex = Integer.parseInt(name.substring(1)) % numberAgents;
+                    String a = new String("A|S");
+                    String[] name = T.getPlayer().getLocalName().split(a);
+                    int agentIndex = Integer.parseInt(name[1]) % numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 for (int i = 0; i<playersTerritories.length; i++){
