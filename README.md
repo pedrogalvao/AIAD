@@ -17,7 +17,6 @@ Agents have the following behaviours:
   - Começar novo jogo (criar novo mapa após o jogo anterior acabar)
   - Passar os parâmetros
 - Aumentar a complexidade da negociação 
-- Escrever CSV com dados gerados pelas execuções
 
 
 

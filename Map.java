@@ -28,7 +28,7 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 5;
+    public static final long maxRounds = 100;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;

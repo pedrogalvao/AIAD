@@ -23,7 +23,7 @@ public class MapGenerators extends Agent {
     protected void setup(){
         // Generate first map; Wait for first map to signalize game over to generate next maps
         generateMap();
-        addBehaviour(new GameOverListener(this));
+        //addBehaviour(new GameOverListener(this));
     }
 
     protected void generateMap(){
@@ -57,11 +57,15 @@ public class MapGenerators extends Agent {
 
                 if (content.equals(cmp)){ // If asked to generate next map
                     // Check if number of maps is over
-                    if (mapCount >= maxMaps)
-                        gen.doDelete();
-                    else {
-                        mapCount++;
+                    if (MapGenerators.mapCount < MapGenerators.maxMaps) {
+                        System.out.println(Long.toString(MapGenerators.mapCount));
+                        MapGenerators.mapCount++;
+                        System.out.println(Long.toString(MapGenerators.mapCount));
                         generateMap();
+                    }
+                    else {
+                        gen.doDelete();
+                        System.out.println("Game over");
                     }
                 }
             }
