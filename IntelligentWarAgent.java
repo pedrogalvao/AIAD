@@ -131,7 +131,7 @@ public class IntelligentWarAgent extends game.WarAgent {
         }
 
         public Boolean allianceValue(AID P){
-            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.Map.numberAgents;
+            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.MapGenerators.numberAgents;
             float t1 = (float)playersTerritories[index]/(float)this.player.numberOfTerritories;
             float t2 = (float)this.player.territories.size()/(float)this.player.numberOfTerritories;
             float v1 = parameters[1] * t1 * t1 + parameters[2] * t1 + parameters[3];
@@ -141,6 +141,11 @@ public class IntelligentWarAgent extends game.WarAgent {
         }
 
         private void chooseAttack(){
+            // Checks if agent still has territories, if not takeDown
+            if (territories.size() == 0){
+                takeDown();
+            }
+
             int dif, maxdif;
             game.Territory src = territories.get(0), dest = territories.get(0).getFrontiers().get(0);
             maxdif = src.getTroops() - dest.getTroops();
@@ -187,7 +192,7 @@ public class IntelligentWarAgent extends game.WarAgent {
             processMessage(msg);
         }
         public Boolean allianceValue(AID P){
-            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.Map.numberAgents;
+            int index = Integer.parseInt(P.getLocalName().substring(1)) % game.MapGenerators.numberAgents;
             float t1 = (float)playersTerritories[index]/(float)this.player.numberOfTerritories;
             float t2 = (float)this.player.territories.size()/(float)this.player.numberOfTerritories;
             float v1 = parameters[1] * t1 * t1 + parameters[2] * t1 + parameters[3];

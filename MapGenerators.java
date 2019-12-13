@@ -13,10 +13,12 @@ public class MapGenerators extends Agent {
     public static long mapCount = 0;
     public static final long maxRounds = 150;
 
-    /*
-    public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
     public static final int numAgentsColab = 2;
+    /*
+    public static final int numberTerritories = 18;
+
+
     public static final int numSmartAgents = 3;
     public static final int numRandomAgents = numberAgents - numSmartAgents;
      */
@@ -44,20 +46,32 @@ public class MapGenerators extends Agent {
     }
 
     protected void generateMap(){
-        game.Territory.terCount = 0;
+        // Generate parameters for smart agents
+        Object[] args = new Object[1];
+        args[0] = generateSmartParam();
+
         ContainerController cc = getContainerController();
         AgentController ac = null;
         try {
-            ac = cc.createNewAgent("map" + Long.toString(mapCount), "game.Map", null);
+            ac = cc.createNewAgent("map" + Long.toString(mapCount), "game.Map", args=args);
+            ac.start();
             //System.out.println("\nMap "+Long.toString(mapCount));
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
-        try {
-            ac.start();
-        } catch (StaleProxyException e) {
-            e.printStackTrace();
+    }
+
+    private float[][] generateSmartParam() {
+        float[][] param = new float[numberAgents][7];
+
+        for (int numAgentsCreated = 0; numAgentsCreated < numberAgents; numAgentsCreated++){
+            if (numAgentsCreated < numAgentsColab)
+                param[numAgentsCreated] = new float[]{-1,0,0,0,0,0,0};
+            else
+                param[numAgentsCreated] = new float[]{-1,0,0,1,0,0,1};
         }
+
+        return param;
     }
 
     class GameOverListener extends Behaviour{

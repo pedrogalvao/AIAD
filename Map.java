@@ -30,13 +30,12 @@ public class Map extends Agent {
     public static final long freezeTime = 500;
 
     public static final int numberTerritories = 18;
-    public static final int numberAgents = 6;
     public static final int numAgentsColab = 2;
     public static final int numSmartAgents = 3;
-    public static final int numRandomAgents = numberAgents - numSmartAgents;
+    public static final int numRandomAgents = game.MapGenerators.numberAgents - numSmartAgents;
     public static long numAgentsCreated;
 
-    float[][] parameters = new float[6][7];
+    float[][] parameters = new float[game.MapGenerators.numberAgents][7];
     String DataToTxtFile;
 
     private static final long serialVersionUID = 1L;
@@ -51,15 +50,19 @@ public class Map extends Agent {
         ContainerController cc = getContainerController();
         this.DataToTxtFile = "";
 
+        // Parameters received from MapGenerators
+        Object[] agentsParameters = getArguments();
+        parameters = (float[][]) agentsParameters[0];
+
         // Creating territories and agents
         int numSmart = 0;
-        for (int j=0; j < numberAgents; j++){
+        for (int j=0; j < game.MapGenerators.numberAgents; j++){
             ArrayList<game.Territory> agentsTerritories = new ArrayList<game.Territory>();
             Object[] args = new Object[3];
 
             // Creating territories
-            for (int i = 0; i < numberTerritories/numberAgents; i++) {
-                //System.out.println("creating territory "+Integer.toString(j*numberTerritories/numberAgents + i));
+            for (int i = 0; i < numberTerritories/game.MapGenerators.numberAgents; i++) {
+                //System.out.println("creating territory "+Integer.toString(j*numberTerritories/game.MapGenerators.numberAgents + i));
                 game.Territory newTer = new game.Territory();
                 this.territories.add(newTer); // Adding territory to map
                 agentsTerritories.add(newTer); // Adding territory to agent
@@ -69,14 +72,16 @@ public class Map extends Agent {
             // Creating agent to get the territories created above
             //System.out.println("Creating agent " + Integer.toString(j));
             args[0] = agentsTerritories;
+            args[1] = parameters[j];
+            args[2] = game.MapGenerators.numberAgents;
 
+            /*
             if (j < numAgentsColab)
                 args[1] = new float[]{-1,0,0,0,0,0,0};
             else
                 args[1] = new float[]{-1,0,0,1,0,0,1};
-            args[2] = numberAgents;
-
             parameters[j] = (float[]) args[1];
+             */
 
             try {
                 AgentController ac;
@@ -342,7 +347,7 @@ public class Map extends Agent {
                 for (game.Territory T : territories){
                     String a = new String("A|S");
                     String[] name = T.getPlayer().getLocalName().split(a);
-                    int agentIndex = Integer.parseInt(name[1]) % numberAgents;
+                    int agentIndex = Integer.parseInt(name[1]) % game.MapGenerators.numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 int max=0, winner=0;
@@ -448,7 +453,7 @@ public class Map extends Agent {
                 for (game.Territory T : territories){
                     String a = new String("A|S");
                     String[] name = T.getPlayer().getLocalName().split(a);
-                    int agentIndex = Integer.parseInt(name[1]) % numberAgents;
+                    int agentIndex = Integer.parseInt(name[1]) % game.MapGenerators.numberAgents;
                     playersTerritories[agentIndex] += 1;
                 }
                 for (int i = 0; i<playersTerritories.length; i++){
