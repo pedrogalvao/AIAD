@@ -58,7 +58,7 @@ public class IntelligentWarAgent extends game.WarAgent {
         this.parameters = (float[])args[1];
 //        addBehaviour(new IntelligentWarBehaviour());
 
-        System.out.println("Agent " + this.agentName + " setup is done");
+        //System.out.println("Agent " + this.agentName + " setup is done");
     }
 
     class IntelligentWarBehaviour extends WarBehaviour {
@@ -182,7 +182,7 @@ public class IntelligentWarAgent extends game.WarAgent {
             for (AID A:player.allies){
                 aa+=A.getLocalName()+", ";
             }
-            System.out.println("Agent "+ player.getLocalName() +" allies: "+aa);*/
+            //System.out.println("Agent "+ player.getLocalName() +" allies: "+aa);*/
             ACLMessage msg = this.player.receive();
             processMessage(msg);
         }
@@ -304,7 +304,7 @@ public class IntelligentWarAgent extends game.WarAgent {
                 int origID = Integer.parseInt(content[1]);
                 int destID = Integer.parseInt(content[2]);
 
-                System.out.println("Conquered territory");
+                //System.out.println("Conquered territory");
 
                 for (game.Territory t : territories){
                     if (t.getId() == origID){
@@ -325,11 +325,11 @@ public class IntelligentWarAgent extends game.WarAgent {
                         addTerritory(tDest);
                         return;
                     } else {
-                        System.out.println("Conquering ERR: Couldn't find conquered territory in frontiers from origin territory");
+                        //System.out.println("Conquering ERR: Couldn't find conquered territory in frontiers from origin territory");
                     }
 
                 } else{
-                    System.out.println("Conquering ERR: Orign of conquering attack not found.");
+                    //System.out.println("Conquering ERR: Orign of conquering attack not found.");
                 }
             }
 

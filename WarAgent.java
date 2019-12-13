@@ -29,7 +29,7 @@ public class WarAgent extends Agent {
 
     public void setup()  {
         this.agentName = getAID().getName();
-        System.out.println("Agent " + this.agentName + " setup");
+        //System.out.println("Agent " + this.agentName + " setup");
         this.mapAID = new AID("map" + Long.toString(game.MapGenerators.mapCount), AID.ISLOCALNAME);
         Object[] args = getArguments();
 
@@ -75,7 +75,7 @@ public class WarAgent extends Agent {
         return this.agentName;
     }
     public void takeDown() {
-        System.out.println("Agent " + this.getName() + " has died");
+        //System.out.println("Agent " + this.getName() + " has died");
 
         // Is it necessary since we are deleting below?
         for (Behaviour b : behaviours) {
@@ -104,7 +104,7 @@ public class WarAgent extends Agent {
 
             // If agent doesn't have any more territories, take down agent
             if (territories.size() == 0) {
-                System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
+                //System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
                 takeDown();
                 return;
             }
@@ -135,7 +135,7 @@ public class WarAgent extends Agent {
                 t = random.nextInt(territories.size()); // 0 inclusive size exclusive
 
                 if (territories.size() == 0) {
-                    System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
+                    //System.out.println("Agent " + getName() + " doesn't have any more territories so it can't attack. Take down.");
                     takeDown();
                     return 0;
                 }
@@ -256,9 +256,9 @@ public class WarAgent extends Agent {
                 if (ter != null){
                     removeTerritory(ter);
                 } else{
-                    System.out.println("Removing err. Territory not found");
+                    //System.out.println("Removing err. Territory not found");
                 }
-                System.out.println("Removed territory");
+                //System.out.println("Removed territory");
                 return;
             }
 
@@ -269,7 +269,7 @@ public class WarAgent extends Agent {
                 int origID = Integer.parseInt(content[1]);
                 int destID = Integer.parseInt(content[2]);
 
-                System.out.println("Conquered territory");
+                //System.out.println("Conquered territory");
 
                 for (game.Territory t : territories){
                     if (t.getId() == origID){
@@ -290,11 +290,11 @@ public class WarAgent extends Agent {
                         addTerritory(tDest);
                         return;
                     } else {
-                        System.out.println("Conquering ERR: Couldn't find conquered territory in frontiers from origin territory");
+                        //System.out.println("Conquering ERR: Couldn't find conquered territory in frontiers from origin territory");
                     }
 
                 } else{
-                    System.out.println("Conquering ERR: Orign of conquering attack not found.");
+                    //System.out.println("Conquering ERR: Orign of conquering attack not found.");
                 }
             }
 

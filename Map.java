@@ -28,7 +28,6 @@ public class Map extends Agent {
     public static final String INVALID_MOVE = "I";
 
     public static final long freezeTime = 500;
-    public static final long maxRounds = 150;
 
     public static final int numberTerritories = 18;
     public static final int numberAgents = 6;
@@ -186,7 +185,7 @@ public class Map extends Agent {
         // Check if number of troops are available. If not, move max (all -1)
         if (n > T1.troops){
             n = T1.troops - 1;
-            System.out.println("Moving too many troops. Now moving " + Integer.toString(n));
+            //System.out.println("Moving too many troops. Now moving " + Integer.toString(n));
         }
 
         T1.troops -= n;
@@ -291,7 +290,7 @@ public class Map extends Agent {
         // Inform map generator to generate Next map.
         informAgent(generator, "N");
 
-        System.out.println("Map erased");
+        //System.out.println("Map erased");
         doDelete();
     }
 
@@ -316,7 +315,7 @@ public class Map extends Agent {
 
 
             // If not, add troops and inform game status
-            System.out.println("Map status:");
+            //System.out.println("Map status:");
             Boolean done = true;
             String P0 = this.map.territories.get(0).getPlayer().getLocalName();
             for (game.Territory T : this.map.territories) {
@@ -329,10 +328,10 @@ public class Map extends Agent {
             // If one player conquered all territories, game is over
 
             if ( done ){
-                System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
+                //System.out.println("\nWar is over. Agent "+ territories.get(0).getPlayer().getLocalName() + " conquered all the territories.");
             }
 
-            if (rounds > Map.maxRounds) {
+            if (rounds > game.MapGenerators.maxRounds) {
                 // Counting number of territories each player has
                 int[] playersTerritories = new int[agents.size()];
                 // Zeroying array
@@ -357,12 +356,12 @@ public class Map extends Agent {
                         max = playersTerritories[i];
                     }
                 }
-                System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.\n");
+                //System.out.println("\nWar is over. Agent "+ winner + " conquered more territories than the others.\n");
 
 
-                System.out.println("\nDATA:");
+                //System.out.println("\nDATA:");
                 //System.out.println(this.map.DataToTxtFile);
-                System.out.println("\nFIM");
+                //System.out.println("\nFIM");
 
                 takeDown();
             }
