@@ -9,12 +9,12 @@ import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 
 public class MapGenerators extends Agent {
-    public static final long maxMaps = 30;
+    public static final long maxMaps = 500;
     public static long mapCount = 0;
     public static final long maxRounds = 150;
 
     public static final int numberAgents = 6;
-    public static final int numAgentsColab = 2;
+    public static final int numAgentsColab = 3;
     /*
     public static final int numberTerritories = 18;
 
@@ -47,6 +47,8 @@ public class MapGenerators extends Agent {
 
     protected void generateMap(){
         // Generate parameters for smart agents
+
+        game.Territory.terCount = 0;
         Object[] args = new Object[1];
         args[0] = generateSmartParam();
 

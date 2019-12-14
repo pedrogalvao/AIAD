@@ -41,10 +41,12 @@ public class Map extends Agent {
     private static final long serialVersionUID = 1L;
     private ArrayList<game.Territory> territories;
     private ArrayList<AgentController> agents;
+    private boolean fileWritten;
 
     public static final AID generator = new AID("generator", AID.ISLOCALNAME);
 
     protected void setup() {
+        fileWritten = false;
         this.territories = new ArrayList<game.Territory>(0);
         this.agents=new ArrayList<AgentController>(0);
         ContainerController cc = getContainerController();
@@ -257,32 +259,33 @@ public class Map extends Agent {
         // however the behaviour was still running after takeDown was over,
         // causing a NullPointerException.
         //removeBehaviour();
-        File file = new File("WarData.csv");
+        if (!this.fileWritten) {
+
+            File file = new File("WarData.csv");
 
 
-        // creates the file
-        try{
-            file.createNewFile();
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-        FileWriter fr = null;
-        try {
-            fr = new FileWriter(file, true);
-            fr.write(this.DataToTxtFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        finally{
-            //close resources
+            // creates the file
             try {
-                fr.close();
+                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            FileWriter fr = null;
+            try {
+                fr = new FileWriter(file, true);
+                fr.write(this.DataToTxtFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                //close resources
+                try {
+                    fr.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            this.fileWritten = true;
         }
-
         // Kill any agent that is still alive (sends a message to the agent so it can destroy itself)
         AID agent = null;
         if (this.territories != null) {

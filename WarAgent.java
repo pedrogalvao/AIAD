@@ -18,6 +18,9 @@ public class WarAgent extends Agent {
     public static final String ACCEPT_ALLIANCE = "Y";
     public static final String REJECT_ALLIANCE = "N";
     public static final String REQUEST_INFO = "R";
+    public static final String DEAL = "D";
+    public static final String REPLY_DEAL = "K";
+    public static final String ACCEPT_DEAL = "Z";
     public static final String ATTACK = "A";
     public static final String MOVE = "M";
 
@@ -26,6 +29,20 @@ public class WarAgent extends Agent {
     protected String agentName;
     protected ArrayList<Behaviour> behaviours;
     protected AID mapAID;
+
+    public void attackMessage(game.Territory T1, game.Territory T2, int n) {
+        //System.out.println("attackMessage");
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(mapAID);
+        msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
+        send(msg);
+    }
+    public void moveMessage(game.Territory T1, game.Territory T2, int n) {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(mapAID);
+        msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
+        send(msg);
+    }
 
     public void setup()  {
         this.agentName = getAID().getName();
@@ -173,19 +190,7 @@ public class WarAgent extends Agent {
                 n = 0;
             return n;
         }
-        public void attackMessage(game.Territory T1, game.Territory T2, int n) {
-            //System.out.println("attackMessage");
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(mapAID);
-            msg.setContent("A" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
-            send(msg);
-        }
-        public void moveMessage(game.Territory T1, game.Territory T2, int n) {
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(mapAID);
-            msg.setContent("M" + game.Map.delimiterChar + Integer.toString(T1.getId()) + game.Map.delimiterChar + Integer.toString(n) + game.Map.delimiterChar + Integer.toString(T2.getId()));
-            send(msg);
-        }
+
         public boolean done() {
             return false;
         }

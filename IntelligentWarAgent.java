@@ -18,6 +18,24 @@ public class IntelligentWarAgent extends game.WarAgent {
     protected int[] playersTerritories;
     protected int numberOfTerritories;
 
+    public game.Territory searchTerritory(int terId){
+        //look for a specific territory in frontiers
+        for (game.Territory T : this.territories) {
+            if (T.getId() == terId) return T;
+            for(game.Territory T2 : T.getFrontiers()) {
+                if (T2.getId() == terId) return T2;
+            }
+        }
+        return null;
+    }
+    public int checkNumberOfTroops(int terId) {
+        //search for a territory in frontiers and check the number of troops it contains
+        game.Territory T = searchTerritory(terId);
+        if (T != null) return T.getTroops();
+        //returns -1 if the territory is not in the frontiers
+        return -1;
+    }
+
     public void setup() {
         this.agentName = getAID().getName();
         Object[] args = getArguments();
@@ -81,6 +99,7 @@ public class IntelligentWarAgent extends game.WarAgent {
             if(t%3==0){
                 requestInformation();
                 chooseAlliances();
+                proposeDeal();
             }
             block(WarBehaviour.delay);
         }
@@ -172,6 +191,51 @@ public class IntelligentWarAgent extends game.WarAgent {
             if (maxdif - parameters[0] > 0) attackMessage(src, dest, src.getTroops()-1);
 
         }
+        String firstDealMessage(AID ally, int allyDestTer, int allyTroops) {
+            String content = game.WarAgent.DEAL + game.WarAgent.delimiterChar + Integer.toString(allyDestTer) + game.WarAgent.delimiterChar + Integer.toString(allyTroops);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(ally);
+            msg.setContent(content);
+            send(msg);
+            //System.out.println(msg.getContent());
+            return content;
+        }
+        private void proposeDeal(){
+
+            if (territories.size() == 0){
+                takeDown();
+            }
+
+            int dif, maxdif;
+            game.Territory src = territories.get(0), dest = territories.get(0).getFrontiers().get(0);
+            maxdif = src.getTroops() - dest.getTroops();
+            for (game.Territory T1 : territories) {
+                for (game.Territory T2 : T1.getFrontiers()) {
+                    if (T1.getPlayer().getLocalName().equals(T2.getPlayer().getLocalName())) continue;
+                    dif = T2.getTroops() - T1.getTroops();
+                    if (dif > maxdif) {
+                        maxdif = dif;
+                        src = T1;
+                        dest = T2;
+                    }
+                }
+            }
+            if (maxdif < 0) return;
+
+            int dif2=-1, maxdif2=-1;
+            game.Territory src2 = dest.getFrontiers().get(0);
+            for (game.Territory T2 : dest.getFrontiers()) {
+                if (dest.getPlayer().getLocalName().equals(T2.getPlayer().getLocalName())) continue;
+                if (dif2 > maxdif2) {
+                    maxdif2 = dif2;
+                    src2 = T2;
+                }
+            }
+            int numTroops = Math.min(src2.getTroops()-1,dest.getTroops()-1);
+            firstDealMessage(src2.getPlayer(), dest.getId(), numTroops);
+        }
+
+
 
     }
     class IntelligentWarListener extends Behaviour {
@@ -225,6 +289,163 @@ public class IntelligentWarAgent extends game.WarAgent {
             }
         }
 
+        public double dealUtility(int myTroops, int enemyTroops, int allyTroops, int costTroops){
+
+            double utility = 0;
+            //if (myTroops < enemyTroops && allyTroops > enemyTroops - myTroops) utility += parameters[7];
+            if (myTroops < enemyTroops && allyTroops > enemyTroops - myTroops) utility += 4;
+            utility += allyTroops;
+            utility -= costTroops;
+            //utility += parameters[8] * (myTroops - (enemyTroops - allyTroops)) * Math.pow((double)Math.abs(myTroops - (enemyTroops - allyTroops)) , 1.2) / myTroops;
+            utility += 0.2 * (myTroops - (enemyTroops - allyTroops)) * Math.pow((double)Math.abs(myTroops - (enemyTroops - allyTroops)) , 1.2) / myTroops;
+            return utility;
+
+        }
+
+        void dealMessage(AID ally, int allyDestTer, int allyTroops, int myDestTer, int myTroops) {
+            String content = game.WarAgent.DEAL + game.WarAgent.delimiterChar + Integer.toString(allyDestTer) + game.WarAgent.delimiterChar + Integer.toString(allyTroops) + game.WarAgent.delimiterChar + Integer.toString(myDestTer) + game.WarAgent.delimiterChar + Integer.toString(myTroops);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(ally);
+            msg.setContent(content);
+            send(msg);
+            //System.out.println(msg.getContent());
+            return;
+        }
+        void dealReplyMessage(AID ally, int allyDestTer, int allyTroops, int myDestTer, int myTroops) {
+            String content = game.WarAgent.REPLY_DEAL + game.WarAgent.delimiterChar + Integer.toString(allyDestTer) + game.WarAgent.delimiterChar + Integer.toString(allyTroops) + game.WarAgent.delimiterChar + Integer.toString(myDestTer) + game.WarAgent.delimiterChar + Integer.toString(myTroops);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(ally);
+            msg.setContent(content);
+            send(msg);
+            //System.out.println(msg.getContent());
+            return;
+        }
+        void acceptDealMessage(AID ally, int allyDestTer, int allyTroops, int myDestTer, int myTroops) {
+            String content = game.WarAgent.ACCEPT_DEAL + game.WarAgent.delimiterChar + Integer.toString(allyDestTer) + game.WarAgent.delimiterChar + Integer.toString(allyTroops) + game.WarAgent.delimiterChar + Integer.toString(myDestTer) + game.WarAgent.delimiterChar + Integer.toString(myTroops);
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(ally);
+            msg.setContent(content);
+            send(msg);
+            //System.out.println(msg.getContent());
+            return;
+        }
+
+        public void respondDeal(ACLMessage msg){
+            String[] content = msg.getContent().split(game.WarAgent.delimiterChar);
+
+            if (content.length == 3) {
+                if (territories.size() == 0) {
+                    takeDown();
+                }
+
+                int dif, maxdif;
+                game.Territory myTer = territories.get(0), enemyTer = territories.get(0).getFrontiers().get(0);
+                maxdif = myTer.getTroops() - enemyTer.getTroops();
+                for (game.Territory T1 : territories) {
+                    for (game.Territory T2 : T1.getFrontiers()) {
+                        if (T1.getPlayer().getLocalName().equals(T2.getPlayer().getLocalName())) continue;
+                        dif = T2.getTroops() - T1.getTroops();
+                        if (dif > maxdif) {
+                            maxdif = dif;
+                            myTer = T1;
+                            enemyTer = T2;
+                        }
+                    }
+                }
+                if (maxdif < 0) return;
+
+                double util = -10, maxutil = -10;
+                game.Territory allyTer = enemyTer.getFrontiers().get(0);
+                for (game.Territory allyTer2 : enemyTer.getFrontiers()) {
+                    if (!allyTer2.getPlayer().getLocalName().equals(msg.getSender().getLocalName())) continue;
+
+                    int allyTroops = Math.min(allyTer2.getTroops() - 1, enemyTer.getTroops() - 1);
+
+                    if (allyTroops > 0)
+                        util = dealUtility(myTer.getTroops(), enemyTer.getTroops(), allyTroops, Integer.parseInt(content[2]));
+                    else util = -10;
+
+                    if (util > maxutil) {
+                        maxutil = util;
+                        allyTer = allyTer2;
+                    }
+                }
+
+                if (maxutil <= 0) {
+                    //System.out.println("Rejecting deal");
+                    return;
+                    /*
+                    ACLMessage msgReply = new ACLMessage(ACLMessage.INFORM);
+                    msgReply.addReceiver(msg.getSender());
+                    msgReply.setContent(game.WarAgent.REJECT_DEAL);
+                    send(msgReply);*/
+                } else {
+                    int allyTroops = Math.min(enemyTer.getTroops() -1, allyTer.getTroops() - 1);
+                    dealMessage(msg.getSender(), enemyTer.getId(), allyTroops, Integer.parseInt(content[1]), Integer.parseInt(content[2]));
+                }
+            }
+            else if (content.length == 5) {
+                respondDealReply(msg);
+                return;
+            }
+            else {
+                //System.out.println("\nUnexpected msg length: "+ Integer.toString(content.length));
+                //System.out.println(msg.getContent());
+            }
+        }
+
+        private boolean respondDealReply(ACLMessage msg){
+            String[] content = msg.getContent().split(game.WarAgent.delimiterChar);
+            game.Territory enemyTer = searchTerritory(Integer.parseInt(content[3]));
+            if (enemyTer == null){
+                //System.out.println("ERROR: Couldn't find enemy territory: "+Integer.parseInt(content[3]));
+                return false;
+            }
+            game.Territory myTer = territories.get(0);
+            int maxdif = -10;
+            for (game.Territory T : enemyTer.getFrontiers()){
+                int dif = enemyTer.getTroops() - T.getTroops();
+                if (dif > maxdif) {
+                    maxdif = dif;
+                    myTer = T;
+                }
+            }
+            int myTroops = myTer.getTroops();
+            int enemyTroops = checkNumberOfTroops(Integer.parseInt(content[1]));
+            if (enemyTroops == -1) return false;
+            int allyTroops = Integer.parseInt(content[4]);
+            int costTroops = Integer.parseInt(content[2]);
+            double util = dealUtility(myTroops, enemyTroops, allyTroops, costTroops);
+            if (util > 0){
+
+                acceptDealMessage(msg.getSender(), Integer.parseInt(content[3]), allyTroops, Integer.parseInt(content[1]), costTroops);
+
+                //attack enemy territory
+                game.Territory src = enemyTer.getFrontiers().get(0);
+                int dif;
+                maxdif = -999999;
+                for (game.Territory T : enemyTer.getFrontiers()){
+                    if (!T.getPlayer().getLocalName().equals(this.player.getLocalName())) continue;
+                    dif = T.getTroops() - enemyTer.getTroops();
+                    if (dif > maxdif) {
+                        maxdif = dif;
+                        src = T;
+                    }
+                }
+                attackMessage(src, enemyTer, costTroops);
+
+                return true;
+            }
+            else if ( dealUtility(myTroops, enemyTroops, allyTroops, costTroops - (int)util - 2) >0 ) {
+                //reply offering less troops
+
+                //System.out.println("___________________DEAL REPLY REPLY_________________________");
+                int allyDestTer = Integer.parseInt(content[3]);
+                dealReplyMessage(msg.getSender(), allyDestTer, allyTroops, enemyTer.getId(),costTroops - (int)util - 2);
+            }
+            return false;
+        }
+
         public void processMessage(ACLMessage msg){
             if (msg == null)
                 return;
@@ -255,9 +476,34 @@ public class IntelligentWarAgent extends game.WarAgent {
                 else if (content[0].equals(game.WarAgent.BREAK_ALLIANCE)){
                     allies.remove(msgSender);
                 }
-
+                else if (content[0].equals(game.WarAgent.DEAL)){
+                    respondDeal(msg);
+                }
+                else if (content[0].equals(game.WarAgent.REPLY_DEAL)){
+                    respondDealReply(msg);
+                }
+                else if (content[0].equals(game.WarAgent.ACCEPT_DEAL)){
+                    game.Territory enemyTer = searchTerritory(Integer.parseInt(content[1]));
+                    if (enemyTer == null){
+                        //System.out.println("ERROR: Couldn't find enemy territory: "+Integer.parseInt(content[3]));
+                        return;
+                    }
+                    game.Territory src = enemyTer.getFrontiers().get(0);
+                    int dif;
+                    int maxdif = -999999;
+                    for (game.Territory T : enemyTer.getFrontiers()){
+                        if (!T.getPlayer().getLocalName().equals(this.player.getLocalName())) continue;
+                        dif = T.getTroops() - enemyTer.getTroops();
+                        if (dif > maxdif) {
+                            maxdif = dif;
+                            src = T;
+                        }
+                    }
+                    game.Territory dest = searchTerritory(Integer.parseInt(content[1]));
+                    attackMessage(src, dest, Integer.parseInt(content[2]));
+                    //System.out.println("_________________________SUCCESSFULLY CONCLUDED DEAL___________________________");
+                }
             }
-
         }
 
         public void mapMessage(ACLMessage msg){
